@@ -98,6 +98,16 @@
         .btn-option { background-color: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; text-align: center; }
         .btn-option:hover { background-color: #823ac7; }
 
+        /* Tombol trofi menuju Dashboard (di index.html) */
+        .trophy-btn {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255,255,255,0.2); border: none; color: white;
+            width: 46px; height: 46px; border-radius: 50%; font-size: 22px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.2s;
+        }
+        .trophy-btn:hover { background: rgba(255,255,255,0.35); transform: scale(1.05); }
+
         #feedback-popup { position: absolute; bottom: -100%; left: 0; width: 100%; padding: 30px; border-radius: 25px 25px 0 0; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; gap: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 10; }
         #feedback-popup.show { bottom: 0; }
         .feedback-success { background-color: var(--success-light); color: var(--success); }
@@ -128,6 +138,7 @@
     <div id="app">
         <!-- SCREEN: HOME LEVEL 2 -->
         <div id="screen-home" class="screen active" style="background-color: var(--primary); color: white; justify-content: center; align-items: center;">
+            <button class="trophy-btn" onclick="location.href='index.html#dashboard'" title="Dashboard Kamu">🏆</button>
             <div style="background: white; border-radius: 25px; width: 120px; height: 120px; display: flex; justify-content: center; align-items: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
                 <h1 style="color: var(--text-dark); font-size: 60px; margin:0;">2</h1>
             </div>
@@ -241,7 +252,8 @@
             <div class="medal-icon">🏆</div>
             <h1 style="color: white; font-size: 36px;">Amazing Job!</h1>
             <p style="color: #E2E8F0; font-size: 18px; margin-top: 10px;">Kamu telah menamatkan Level 2 dengan luar biasa!</p>
-            <button class="btn-primary" style="background: white; color: #3B0764; margin-top: 50px;" onclick="location.href='index.html'">Kembali ke Menu Utama</button>
+            <button class="btn-primary" style="background: white; color: #3B0764; margin-top: 25px;" onclick="location.href='level3.html'">Lanjut ke Level 3 (Listening) ➔</button>
+            <button class="btn-primary" style="background: transparent; border: 2px solid white; color: white; margin-top: 15px;" onclick="location.href='index.html#dashboard'">Lihat Dashboard 📊</button>
         </div>
 
         <!-- FEEDBACK POPUP -->
@@ -253,11 +265,15 @@
 
     </div>
 
+    <!-- Shared progress/localStorage system (skor, kesalahan, lencana) -->
+    <script src="progress.js"></script>
+
     <!-- === JAVASCRIPT / LOGIKA LEVEL 2 === -->
     <script>
         let nextScreenId = '';
         let timerInterval;
         const TIME_LIMIT = 25; 
+        const LEVEL_KEY = 'level2';
 
         // Kunci Jawaban Diperbarui
         const answers = {
@@ -267,6 +283,26 @@
             q4: "The meal is prepared by the chef",
             q5: "cancel"
         };
+
+        const FULL_ORDER = ['q1', 'q2', 'q3', 'q4', 'q5'];
+
+        // --- Mode "Ulangi Soal yang Salah" (dipicu dari Dashboard via ?retry=q2,q5) ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const retryParam = urlParams.get('retry');
+        const isRetryMode = !!retryParam;
+        const activeOrder = isRetryMode
+            ? retryParam.split(',').filter(id => FULL_ORDER.includes(id))
+            : FULL_ORDER;
+
+        let correctCount = 0;
+
+        function getNextScreenId(questionId) {
+            const idx = activeOrder.indexOf(questionId);
+            if (idx === activeOrder.length - 1) {
+                return isRetryMode ? 'REDIRECT_DASHBOARD' : 'screen-result';
+            }
+            return `screen-${activeOrder[idx + 1]}`;
+        }
 
         function startTimer(questionId) {
             clearInterval(timerInterval);
@@ -291,9 +327,9 @@
         function handleTimeout(questionId) {
             let correctAnswerText = answers[questionId];
             
-            const order = ['q1', 'q2', 'q3', 'q4', 'q5']; // Array order diperbarui
-            const currentIndex = order.indexOf(questionId);
-            nextScreenId = (currentIndex === order.length - 1) ? 'screen-result' : `screen-${order[currentIndex + 1]}`;
+            bkRecordAnswer(LEVEL_KEY, questionId, false);
+            nextScreenId = getNextScreenId(questionId);
+            if (nextScreenId === 'screen-result') bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
             
             showFeedback(false, correctAnswerText, "Waktu Habis! ⏰");
         }
@@ -314,14 +350,15 @@
             let isCorrect = false;
             let correctAnswerText = answers[questionId];
 
-            const order = ['q1', 'q2', 'q3', 'q4', 'q5']; // Array order diperbarui
-            const currentIndex = order.indexOf(questionId);
-            nextScreenId = (currentIndex === order.length - 1) ? 'screen-result' : `screen-${order[currentIndex + 1]}`;
+            nextScreenId = getNextScreenId(questionId);
 
-            // Logika pengecekan kesamaan string jawaban
             if (selectedAnswer === answers[questionId]) {
                 isCorrect = true;
             }
+
+            bkRecordAnswer(LEVEL_KEY, questionId, isCorrect);
+            if (isCorrect) correctCount++;
+            if (nextScreenId === 'screen-result') bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
 
             showFeedback(isCorrect, correctAnswerText);
         }
@@ -345,7 +382,14 @@
             }
 
             answerText.innerText = correctAnswer;
-            nextBtn.onclick = () => goToScreen(nextScreenId);
+            // Jika mode retry sudah selesai, kembali ke Dashboard di index.html
+            nextBtn.onclick = () => {
+                if (nextScreenId === 'REDIRECT_DASHBOARD') {
+                    window.location.href = 'index.html#dashboard';
+                } else {
+                    goToScreen(nextScreenId);
+                }
+            };
             popup.classList.add('show');
         }
 
@@ -361,6 +405,13 @@
                 oscillator.start();
                 setTimeout(() => oscillator.stop(), duration);
             } catch (e) { console.log("Audio not supported"); }
+        }
+
+        // --- Boot: jika mode retry, tombol "Mulai" langsung ke soal salah pertama ---
+        if (isRetryMode && activeOrder.length > 0) {
+            document.querySelector('#screen-home .btn-primary').setAttribute(
+                'onclick', `goToScreen('screen-${activeOrder[0]}')`
+            );
         }
     </script>
 </body>
