@@ -1,0 +1,134 @@
+/* ==================================================================
+   BahasaKu - Responsive Overrides
+   Melengkapi styling utama tiap halaman agar tampil rapi di semua
+   ukuran layar: HP kecil, HP lansekap, tablet, laptop, hingga
+   monitor besar. Di-include di SEMUA halaman via <link>, diletakkan
+   SETELAH <style> internal supaya aturan di sini bisa menimpa yang
+   lama tanpa perlu mengubah kode asli.
+   ================================================================== */
+
+/* --- Dasar: cegah scroll horizontal & pastikan tinggi layar akurat --- */
+html, body {
+  overflow-x: hidden;
+  height: 100%;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  min-height: 100vh;
+  min-height: 100dvh; /* viewport dinamis: aman dari address bar HP */
+}
+
+/* Layar aktif boleh scroll vertikal jika kontennya lebih tinggi
+   dari layar (mis. daftar opsi kalimat panjang, video, dsb),
+   supaya tombol "Check Answer" tidak pernah terpotong. */
+.screen.active {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --- Safe-area untuk HP dengan notch / gesture bar (iPhone dsb) --- */
+.screen {
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
+  padding-bottom: max(25px, env(safe-area-inset-bottom));
+}
+
+/* --- Ukuran font & ikon menyesuaikan lebar layar secara halus,
+       tidak lagi "loncat" tiba-tiba di satu breakpoint saja --- */
+h1 { font-size: clamp(24px, 6vw, 34px); }
+h2 { font-size: clamp(19px, 5vw, 32px); }
+.question-text { font-size: clamp(17px, 4.2vw, 32px) !important; margin: clamp(20px, 6vw, 50px) 0 !important; }
+.img-question { font-size: clamp(64px, 22vw, 150px) !important; margin: clamp(16px, 6vw, 40px) 0 !important; }
+.icon-large { font-size: clamp(56px, 18vw, 100px) !important; }
+.medal-icon { font-size: clamp(80px, 24vw, 120px) !important; }
+.btn-option { font-size: clamp(13px, 3.2vw, 18px) !important; }
+.btn-primary, .btn-next { font-size: clamp(15px, 3.6vw, 18px) !important; }
+
+/* Elemen interaktif tetap nyaman disentuh di HP (standar 44px) */
+.btn-option, .btn-primary, .btn-next, .btn-audio, .word-block, .btn-retry, .back-btn, .trophy-btn {
+  min-height: 44px;
+}
+
+img, video, .video-wrapper { max-width: 100%; height: auto; }
+
+/* ============================================================
+   HP SANGAT KECIL (<= 360px, mis. iPhone SE, Android layar 5")
+   ============================================================ */
+@media (max-width: 360px) {
+  .screen { padding: 16px 14px; }
+  .grid-options { grid-template-columns: 1fr; gap: 10px; }
+  .btn-option { padding: 12px; }
+  .btn-primary, .btn-next { padding: 13px; }
+  .timer-badge { font-size: 12px; padding: 6px 10px; }
+  .trophy-btn { width: 40px; height: 40px; font-size: 18px; top: 12px; right: 12px; }
+  .audio-box { padding: 12px; gap: 10px; }
+  .word-block { padding: 8px 14px; }
+  #feedback-popup { padding: 18px !important; }
+}
+
+/* ============================================================
+   MODE LANSKAP DI HP (layar pendek) — cegah konten kepotong
+   ============================================================ */
+@media (max-height: 480px) and (orientation: landscape) {
+  .screen { justify-content: flex-start !important; padding-top: 16px; padding-bottom: 16px; }
+  .img-question, .icon-large { margin: 8px 0 !important; }
+  .medal-icon { margin: 10px 0 !important; font-size: clamp(60px, 16vh, 100px) !important; }
+  .btn-primary { margin-top: 18px !important; }
+  #feedback-popup { max-height: 92vh; overflow-y: auto; padding: 16px 20px !important; }
+  .video-wrapper { margin: 10px auto !important; }
+}
+
+/* ============================================================
+   TABLET (768px – 1023px): mulai tampil sebagai kartu terpusat
+   ============================================================ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  body { padding: 24px 0; }
+  #app {
+    max-width: 640px;
+    min-height: 92vh;
+    height: auto;
+    margin: 0 auto;
+    border-radius: 24px !important;
+  }
+  .screen.active { min-height: 92vh; }
+}
+
+/* ============================================================
+   DESKTOP / LAYAR BESAR (>= 1024px)
+   Tampilan melebar penuh (responsif) tanpa tampilan kartu mobile
+   ============================================================ */
+@media (min-width: 1024px) {
+  body { 
+    padding: 0; 
+  }
+  
+  #app {
+    max-width: 1200px;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0 auto;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  
+  .screen {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+  
+  .screen.active { 
+    min-height: 100vh; 
+  }
+}
+
+/* Layar Ultrawide / Monitor Lebar (>= 1440px) */
+@media (min-width: 1440px) {
+  #app { 
+    max-width: 1400px; 
+  }
+}
