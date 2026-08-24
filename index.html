@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BahasaKu - Belajar English</title>
     <style>
+        /* === CSS ONBOARDING & MASCOT === */
+        .mascot-container { display: flex; align-items: flex-end; gap: 15px; margin-bottom: 30px; width: 100%; }
+        .mascot-icon { font-size: 80px; animation: floatMascot 3s ease-in-out infinite; }
+        @keyframes floatMascot { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .speech-bubble { background-color: white; border: 2px solid #E0E0E0; padding: 15px 20px; border-radius: 20px 20px 20px 5px; font-size: 18px; font-weight: bold; color: var(--text-dark); position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); flex: 1; }
+        .speech-bubble::before { content: ""; position: absolute; bottom: 10px; left: -10px; border-width: 10px 15px 10px 0; border-style: solid; border-color: transparent #E0E0E0 transparent transparent; }
+        .speech-bubble::after { content: ""; position: absolute; bottom: 12px; left: -7px; border-width: 8px 12px 8px 0; border-style: solid; border-color: transparent white transparent transparent; }
+        
+        .option-list { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+        .btn-onboard { background-color: white; border: 2px solid #E0E0E0; border-radius: 16px; padding: 18px 20px; font-size: 16px; font-weight: bold; color: var(--text-dark); text-align: left; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; }
+        .btn-onboard:hover { background-color: #F8F9FA; }
+        .btn-onboard.selected { border-color: var(--primary); background-color: #E3F2FD; color: var(--primary); }
+        .btn-onboard .icon { font-size: 24px; }
+
         /* === CSS / STYLING === */
         :root {
             --primary: #2D9CDB;
@@ -17,80 +31,27 @@
             --text-dark: #333333;
             --text-gray: #828282;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        #app {
-            background-color: white;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        }
-
-        .screen {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-            animation: fadeIn 0.4s ease;
-        }
-        .screen.active {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        #app { background-color: white; width: 100%; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .screen { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.4s ease; }
+        .screen.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         h1, h2, h3 { color: var(--text-dark); text-align: center; }
         p { color: var(--text-gray); text-align: center; margin-bottom: 20px; }
 
         /* Progress & Timer */
-        .progress-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            width: 100%;
-        }
+        .progress-container { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; width: 100%; }
         .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-dark); }
         .progress-bar { flex: 1; display: flex; gap: 8px; }
         .progress-step { height: 8px; flex: 1; background-color: #E0E0E0; border-radius: 4px; transition: 0.3s; }
         .progress-step.active { background-color: var(--primary); }
-        
-        .timer-badge {
-            background-color: var(--warning); color: white; padding: 8px 15px;
-            border-radius: 20px; font-weight: bold; font-size: 14px;
-            display: flex; align-items: center; gap: 5px;
-            box-shadow: 0 4px 10px rgba(242, 201, 76, 0.4);
-        }
+        .timer-badge { background-color: var(--warning); color: white; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 5px; box-shadow: 0 4px 10px rgba(242, 201, 76, 0.4); }
         .timer-badge.danger { background-color: var(--danger); box-shadow: 0 4px 10px rgba(235, 87, 87, 0.4); animation: pulse 1s infinite; }
-
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         /* Buttons */
-        .btn-primary {
-            background-color: var(--primary); color: white; border: none;
-            padding: 16px; border-radius: 30px; font-size: 18px; font-weight: bold;
-            cursor: pointer; width: 100%; margin-top: auto; transition: 0.2s;
-        }
+        .btn-primary { background-color: var(--primary); color: white; border: none; padding: 16px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; margin-top: auto; transition: 0.2s; }
         .btn-primary:hover { background-color: #2386c1; }
         .btn-primary:active { transform: scale(0.98); }
 
@@ -99,12 +60,10 @@
         .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
         .btn-option { background-color: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; cursor: pointer; transition: 0.2s; }
         .btn-option:hover { background-color: #2386c1; }
-
         .audio-box { display: flex; align-items: center; gap: 15px; background: #F8F9FA; padding: 20px; border-radius: 15px; margin-bottom: 25px; font-size: 18px; width: 100%; }
         .btn-audio { background-color: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 12px; cursor: pointer; font-size: 20px; }
         textarea.input-box { width: 100%; height: 150px; border: 2px solid #E0E0E0; border-radius: 12px; padding: 20px; font-size: 16px; resize: none; outline: none; transition: 0.3s; }
         textarea.input-box:focus { border-color: var(--primary); }
-
         .answer-area { min-height: 70px; border-bottom: 2px dashed #BDBDBD; margin: 20px 0; display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; align-content: flex-start; width: 100%; }
         .word-bank { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 30px; width: 100%; }
         .word-block { background-color: white; border: 2px solid #E0E0E0; border-radius: 10px; padding: 10px 20px; cursor: pointer; font-weight: bold; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; font-size: 16px; }
@@ -119,38 +78,25 @@
         .feedback-error { background-color: var(--danger-light); color: var(--danger); }
         .feedback-error .btn-next { background-color: var(--danger); }
         .btn-next { color: white; border: none; padding: 16px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; }
-
         .medal-icon { font-size: 120px; text-align: center; margin: 50px 0 20px; }
 
         /* === Dashboard styles === */
-        .trophy-btn {
-            position: absolute; top: 20px; right: 20px;
-            background: rgba(255,255,255,0.2); border: none; color: white;
-            width: 46px; height: 46px; border-radius: 50%; font-size: 22px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: 0.2s;
-        }
-        .trophy-btn:hover { background: rgba(255,255,255,0.35); transform: scale(1.05); }
-
         #screen-dashboard { align-items: center; overflow-y: auto; background: var(--bg-color); }
         .dashboard-back-btn { align-self: flex-start; background: none; border: none; font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-dark); margin-bottom: 15px; }
         .dashboard-title { font-size: 26px; margin-bottom: 25px; }
         .dashboard-section { width: 100%; max-width: 800px; margin-bottom: 30px; }
         .dashboard-section h3 { text-align: left; font-size: 18px; color: var(--text-dark); margin-bottom: 12px; }
-
         .score-card { background: white; border-radius: 14px; padding: 15px 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 12px; }
         .score-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .score-card-title { font-weight: bold; color: var(--text-dark); }
         .score-card-status { font-size: 18px; }
         .score-card-value { font-size: 22px; font-weight: bold; color: var(--primary); }
         .score-card-best { font-size: 13px; color: var(--text-gray); margin-top: 4px; }
-
         .retry-row { display: flex; justify-content: space-between; align-items: center; background: white; border-radius: 14px; padding: 15px 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 12px; flex-wrap: wrap; gap: 10px; text-align: left; }
         .retry-count { display: block; font-size: 13px; color: var(--danger); margin-top: 3px; }
         .btn-retry { background: var(--danger); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px; white-space: nowrap; }
         .btn-retry:hover { opacity: 0.9; }
         .dashboard-empty { color: var(--text-gray); text-align: left; }
-
         .badge-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; width: 100%; }
         .badge-item { background: white; border-radius: 16px; padding: 15px 10px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.06); transition: 0.2s; }
         .badge-item .badge-icon { font-size: 40px; margin-bottom: 8px; }
@@ -158,15 +104,17 @@
         .badge-item .badge-desc { font-size: 11px; color: var(--text-gray); margin-top: 4px; }
         .badge-item.locked { filter: grayscale(1); opacity: 0.45; }
         .badge-item.earned { box-shadow: 0 6px 16px rgba(45,156,219,0.25); }
-
         .btn-reset-progress { background: none; border: none; color: var(--danger); font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 5px; }
 
+        /* Khusus Avatar */
+        .avatar-circle { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--primary); background-color: #E3F2FD; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin: 0 auto 20px; display: block; object-fit: cover;}
+        
         /* Responsive */
         @media (max-width: 767px) { #app { height: 100vh; max-width: 100vw; border-radius: 0; } .screen { padding: 25px 20px; } .btn-primary { margin-top: 30px; } }
         @media (min-width: 768px) {
             #app { max-width: 100vw; height: 100vh; border-radius: 0; }
             .screen { padding: 40px 20px; align-items: center; }
-            .progress-container, h2, p, .grid-options, .audio-box, .input-box, .answer-area, .word-bank { max-width: 800px; }
+            .progress-container, h2, p, .grid-options, .audio-box, .input-box, .answer-area, .word-bank, .dashboard-section { max-width: 800px; }
             h2 { font-size: 32px; margin-bottom: 20px;} .img-question { font-size: 150px; margin: 40px 0; }
             .grid-options { gap: 20px; } .btn-option { padding: 20px; font-size: 18px; } .input-box { font-size: 18px; padding: 25px; } .word-block { font-size: 18px; padding: 12px 25px; }
             .btn-primary { max-width: 400px; margin-top: 40px; }
@@ -175,26 +123,129 @@
             .btn-next { max-width: 400px; padding: 20px; margin-top: 10px; }
         }
     </style>
-    <link rel="stylesheet" href="responsive.css">
 </head>
 <body>
 
     <div id="app">
-        <!-- SCREEN: HOME -->
-        <div id="screen-home" class="screen active" style="background-color: var(--primary); color: white; justify-content: center; align-items: center;">
-            <button class="trophy-btn" onclick="goToScreen('screen-dashboard')" title="Dashboard Kamu">🏆</button>
-            <div style="background: white; border-radius: 25px; width: 120px; height: 120px; display: flex; justify-content: center; align-items: center; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
-                <h1 style="color: var(--text-dark); font-size: 60px; margin:0;">B</h1>
+        <!-- ========================================== -->
+        <!-- SCREEN: ONBOARDING 1 (Tujuan Belajar)      -->
+        <!-- ========================================== -->
+        <div id="screen-onboard-1" class="screen active">
+            <div class="progress-container" style="margin-bottom: 20px;">
+                <div class="progress-bar">
+                    <div class="progress-step active" style="background: var(--success);"></div>
+                    <div class="progress-step"></div>
+                    <div class="progress-step"></div>
+                    <div class="progress-step"></div>
+                </div>
             </div>
-            <h1 style="color: white; font-size: 32px; margin-bottom: 10px;">BahasaKu</h1>
-            <p style="color: #E1F0FA; font-size: 18px;">Belajar bahasa Inggris secara gratis!</p>
-            <button class="btn-primary" style="background: white; color: var(--primary); margin-top: 60px;" onclick="goToScreen('screen-q1')">Mulai Sekarang ➔</button>
+
+            <div class="mascot-container">
+                <div class="mascot-icon">🦊</div>
+                <div class="speech-bubble">Hai, aku Kuki! Apa tujuanmu belajar bahasa Inggris?</div>
+            </div>
+
+            <div class="option-list" id="options-1">
+                <button class="btn-onboard" onclick="selectOnboardOption('options-1', this)"><span class="icon">🎓</span> Pendidikan & Sekolah</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-1', this)"><span class="icon">💼</span> Prospek Karier</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-1', this)"><span class="icon">✈️</span> Persiapan Liburan</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-1', this)"><span class="icon">🧠</span> Sekadar Hobi & Otak</button>
+            </div>
+
+            <button id="btn-next-onboard-1" class="btn-primary" style="margin-top: auto; background-color: #E0E0E0; color: #999; cursor: not-allowed;" onclick="if(!this.disabled) goToScreen('screen-onboard-2')" disabled>LANJUTKAN</button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SCREEN: ONBOARDING 2 (Seberapa Tahu)       -->
+        <!-- ========================================== -->
+        <div id="screen-onboard-2" class="screen">
+            <div class="progress-container" style="margin-bottom: 20px;">
+                <button class="back-btn" onclick="goToScreen('screen-onboard-1')">❮</button>
+                <div class="progress-bar">
+                    <div class="progress-step active" style="background: var(--success);"></div>
+                    <div class="progress-step active" style="background: var(--success);"></div>
+                    <div class="progress-step"></div>
+                    <div class="progress-step"></div>
+                </div>
+            </div>
+
+            <div class="mascot-container">
+                <div class="mascot-icon">🦊</div>
+                <div class="speech-bubble">Oke! Berapa banyak yang kamu tahu tentang bahasa Inggris?</div>
+            </div>
+
+            <div class="option-list" id="options-2">
+                <button class="btn-onboard" onclick="selectOnboardOption('options-2', this)"><span class="icon">🌱</span> Baru mulai belajar kata dasar</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-2', this)"><span class="icon">🌿</span> Tahu sedikit percakapan dasar</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-2', this)"><span class="icon">🌳</span> Cukup paham grammar & vocab</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-2', this)"><span class="icon">🌲</span> Tingkat Lanjut (Advance)</button>
+            </div>
+
+            <button id="btn-next-onboard-2" class="btn-primary" style="margin-top: auto; background-color: #E0E0E0; color: #999; cursor: not-allowed;" onclick="if(!this.disabled) goToScreen('screen-onboard-3')" disabled>LANJUTKAN</button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SCREEN: ONBOARDING 3 (Alasan Khusus)       -->
+        <!-- ========================================== -->
+        <div id="screen-onboard-3" class="screen">
+            <div class="progress-container" style="margin-bottom: 20px;">
+                <button class="back-btn" onclick="goToScreen('screen-onboard-2')">❮</button>
+                <div class="progress-bar">
+                    <div class="progress-step active" style="background: var(--success);"></div>
+                    <div class="progress-step active" style="background: var(--success);"></div>
+                    <div class="progress-step active" style="background: var(--success);"></div>
+                    <div class="progress-step"></div>
+                </div>
+            </div>
+
+            <div class="mascot-container">
+                <div class="mascot-icon">🦊</div>
+                <div class="speech-bubble">Hmm, lalu mengapa kamu ingin memperlancar bahasa Inggris?</div>
+            </div>
+
+            <div class="option-list" id="options-3">
+                <button class="btn-onboard" onclick="selectOnboardOption('options-3', this)"><span class="icon">💬</span> Untuk mengobrol dengan orang asing</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-3', this)"><span class="icon">💯</span> Untuk mendapat nilai bagus di sekolah</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-3', this)"><span class="icon">🎬</span> Ingin nonton film tanpa subtitle</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-3', this)"><span class="icon">🌐</span> Akses informasi global di internet</button>
+            </div>
+
+            <button id="btn-next-onboard-3" class="btn-primary" style="margin-top: auto; background-color: #E0E0E0; color: #999; cursor: not-allowed;" onclick="if(!this.disabled) goToScreen('screen-onboard-4')" disabled>LANJUTKAN</button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SCREEN: ONBOARDING 4 (Target Waktu)        -->
+        <!-- ========================================== -->
+        <div id="screen-onboard-4" class="screen">
+            <div class="progress-container" style="margin-bottom: 20px;">
+                <button class="back-btn" onclick="goToScreen('screen-onboard-3')">❮</button>
+                <div class="progress-bar">
+                    <div class="progress-step active" style="background: var(--success);"></div>
+                    <div class="progress-step active" style="background: var(--success);"></div>
+                    <div class="progress-step active" style="background: var(--success);"></div>
+                    <div class="progress-step active" style="background: var(--success);"></div>
+                </div>
+            </div>
+
+            <div class="mascot-container">
+                <div class="mascot-icon">🦊</div>
+                <div class="speech-bubble">Sip! Terakhir, berapa lama target belajarmu setiap hari?</div>
+            </div>
+
+            <div class="option-list" id="options-4">
+                <button class="btn-onboard" onclick="selectOnboardOption('options-4', this)"><span class="icon">🟢</span> Santai (5 menit/hari)</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-4', this)"><span class="icon">🟡</span> Biasa (10 menit/hari)</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-4', this)"><span class="icon">🔴</span> Serius (15 menit/hari)</button>
+                <button class="btn-onboard" onclick="selectOnboardOption('options-4', this)"><span class="icon">🔥</span> Gila-gilaan (30 menit/hari)</button>
+            </div>
+
+            <button id="btn-next-onboard-4" class="btn-primary" style="margin-top: auto; background-color: #E0E0E0; color: #999; cursor: not-allowed;" onclick="if(!this.disabled) goToScreen('screen-dashboard')" disabled>SELESAI</button>
         </div>
 
         <!-- SCREEN: TEST 1 (Pilihan Ganda - Hidung) -->
         <div id="screen-q1" class="screen">
             <div class="progress-container">
-                <button class="back-btn" onclick="goToScreen('screen-home')">❮</button>
+                <button class="back-btn" onclick="goToScreen('screen-dashboard')">❮</button>
                 <div class="progress-bar">
                     <div class="progress-step active"></div>
                     <div class="progress-step"></div><div class="progress-step"></div><div class="progress-step"></div><div class="progress-step"></div><div class="progress-step"></div>
@@ -323,7 +374,6 @@
             <button class="btn-primary" onclick="checkAnswer('q6')">Check Answer</button>
         </div>
 
-
         <!-- SCREEN: CONGRATULATIONS -->
         <div id="screen-result" class="screen" style="background-color: #4C1D95; justify-content: center;">
             <div class="medal-icon">🏅</div>
@@ -333,28 +383,63 @@
             <button class="btn-primary" style="background: transparent; border: 2px solid white; color: white; margin-top: 15px;" onclick="goToScreen('screen-dashboard')">Lihat Dashboard 📊</button>
         </div>
 
-        <!-- SCREEN: DASHBOARD -->
-        <div id="screen-dashboard" class="screen">
-            <button class="dashboard-back-btn" onclick="goToScreen('screen-home')">❮ Kembali ke Menu Utama</button>
-            <h2 class="dashboard-title">📊 Dashboard Kamu</h2>
+        <!-- ========================================== -->
+        <!-- SCREEN: AVATAR CUSTOMIZER & UPLOAD         -->
+        <!-- ========================================== -->
+        <div id="screen-avatar" class="screen" style="background-color: #F8F9FA;">
+            <button class="dashboard-back-btn" style="margin-top: 20px;" onclick="goToScreen('screen-dashboard')">❮ Kembali</button>
+            <h2 style="margin-top: 10px;">Atur Foto Profil</h2>
+            <p>Pilih avatar otomatis atau unggah fotomu sendiri!</p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <img id="preview-avatar-img" src="" alt="Preview Avatar" class="avatar-circle" style="width: 150px; height: 150px;">
+            </div>
+            
+            <div class="option-list" style="max-width: 400px; margin: 0 auto; width: 100%; gap: 10px;">
+                <!-- Tombol acak avatar (DiceBear) -->
+                <button class="btn-onboard" style="justify-content: center;" onclick="randomizeAvatar()">
+                    <span class="icon">🎲</span> Acak Avatar Kartun
+                </button>
 
-            <div class="dashboard-section">
+                <!-- Tombol untuk Memicu Upload File Lokal -->
+                <button class="btn-onboard" style="justify-content: center; background-color: #E8F5E9; border-color: var(--success); color: var(--success);" onclick="document.getElementById('upload-input').click()">
+                    <span class="icon">📁</span> Unggah Foto dari Perangkat
+                </button>
+                <!-- Input file tersembunyi -->
+                <input type="file" id="upload-input" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+            </div>
+            
+            <button class="btn-primary" style="max-width: 400px; margin-top: 30px;" onclick="saveAvatar()">SIMPAN PERUBAHAN</button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- SCREEN: DASHBOARD                          -->
+        <!-- ========================================== -->
+        <div id="screen-dashboard" class="screen">
+            
+            <div style="width: 100%; text-align: center; margin-top: 20px;">
+                <img id="dashboard-avatar-img" src="" alt="Avatar Profil" class="avatar-circle">
+                <h2 class="dashboard-title" style="margin-bottom: 5px;">Dashboard BahasaKu</h2>
+            </div>
+            
+            <div class="dashboard-section" style="margin-top: 20px;">
                 <h3>Riwayat Skor</h3>
                 <div id="dashboard-scoreboard"></div>
             </div>
+            
+            <button class="btn-primary" style="background-color: var(--success); font-size: 20px; box-shadow: 0 5px 15px rgba(124, 186, 65, 0.4);" onclick="goToScreen('screen-q1')">▶️ MULAI LEVEL 1 SEKARANG</button>
 
-            <div class="dashboard-section">
+            <div class="dashboard-section" style="margin-top: 30px;">
                 <h3>Tinjauan Kesalahan</h3>
                 <div id="dashboard-retry"></div>
             </div>
-
             <div class="dashboard-section">
                 <h3>Lencana Pencapaian</h3>
                 <div id="dashboard-badges" class="badge-gallery"></div>
             </div>
 
-            <button class="btn-primary" style="max-width: 400px; margin-top: 10px;" onclick="goToScreen('screen-home')">Kembali ke Menu Utama</button>
-            <button class="btn-reset-progress" onclick="bkResetProgress()">Reset semua progres</button>
+            <button class="btn-primary" style="background-color: var(--warning); color: var(--text-dark); max-width: 400px; margin-top: 20px;" onclick="goToScreen('screen-avatar')">🎨 Edit Avatar Profil</button>
+            <button class="btn-reset-progress" style="margin-top: 25px; margin-bottom: 30px;" onclick="bkResetProgress()">Reset semua progres</button>
         </div>
 
         <!-- FEEDBACK POPUP -->
@@ -368,11 +453,85 @@
 
     <!-- Shared progress/localStorage system (skor, kesalahan, lencana) -->
     <script src="progress.js"></script>
-    <!-- Shared backsound music system -->
-    <script src="bgm.js"></script>
 
     <!-- === JAVASCRIPT / LOGIKA === -->
     <script>
+        // === LOGIKA AVATAR (DiceBear & Upload Lokal Base64) ===
+        function getAvatarSource(value) {
+            if (!value) return `https://api.dicebear.com/7.x/avataaars/svg?seed=Kuki&backgroundColor=b6e3f4`;
+            // Jika diawali dengan 'data:image', berarti itu adalah hasil upload lokal (Base64)
+            if (value.startsWith('data:image')) {
+                return value;
+            }
+            // Jika tidak, berarti itu seed untuk API DiceBear
+            return `https://api.dicebear.com/7.x/avataaars/svg?seed=${value}&backgroundColor=b6e3f4`;
+        }
+
+        function renderDashboardAvatar() {
+            let savedAvatar = localStorage.getItem('bahasaku_avatar_val') || 'Kuki';
+            const img = document.getElementById('dashboard-avatar-img');
+            if (img) {
+                img.src = getAvatarSource(savedAvatar);
+            }
+        }
+
+        function initAvatarScreen() {
+            let savedAvatar = localStorage.getItem('bahasaku_avatar_val') || 'Kuki';
+            const previewImg = document.getElementById('preview-avatar-img');
+            previewImg.src = getAvatarSource(savedAvatar);
+            previewImg.dataset.value = savedAvatar;
+        }
+
+        function randomizeAvatar() {
+            const randomSeed = Math.random().toString(36).substring(2, 10);
+            const previewImg = document.getElementById('preview-avatar-img');
+            previewImg.src = getAvatarSource(randomSeed);
+            previewImg.dataset.value = randomSeed;
+        }
+
+        // Fungsi membaca file upload dari perangkat user menjadi Base64
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64String = e.target.result;
+                    const previewImg = document.getElementById('preview-avatar-img');
+                    previewImg.src = base64String;
+                    previewImg.dataset.value = base64String; // Simpan string base64 sementara
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveAvatar() {
+            const valToSave = document.getElementById('preview-avatar-img').dataset.value;
+            localStorage.setItem('bahasaku_avatar_val', valToSave);
+            
+            renderDashboardAvatar();
+            goToScreen('screen-dashboard');
+        }
+
+        // === LOGIKA ONBOARDING ===
+        function selectOnboardOption(containerId, buttonElement) {
+            const container = document.getElementById(containerId);
+            const buttons = container.querySelectorAll('.btn-onboard');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+
+            buttonElement.classList.add('selected');
+
+            const stepNumber = containerId.split('-')[1]; 
+            let nextBtnId = `btn-next-onboard-${stepNumber}`;
+            let nextBtn = document.getElementById(nextBtnId);
+            
+            if (nextBtn) {
+                nextBtn.disabled = false;
+                nextBtn.style.backgroundColor = 'var(--primary)';
+                nextBtn.style.color = 'white';
+                nextBtn.style.cursor = 'pointer';
+            }
+        }
+
         let nextScreenId = '';
         let timerInterval;
         const TIME_LIMIT = 30;
@@ -392,10 +551,8 @@
             q5: "Senang bertemu denganmu"
         }
 
-        // Urutan lengkap soal Level 1
         const FULL_ORDER = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'];
 
-        // --- Mode "Ulangi Soal yang Salah" (dipicu dari Dashboard via ?retry=q2,q5) ---
         const urlParams = new URLSearchParams(window.location.search);
         const retryParam = urlParams.get('retry');
         const isRetryMode = !!retryParam;
@@ -405,7 +562,6 @@
 
         let correctCount = 0;
 
-        // Tentukan layar soal berikutnya berdasarkan activeOrder (normal / retry)
         function getNextScreenId(questionId) {
             const idx = activeOrder.indexOf(questionId);
             if (idx === activeOrder.length - 1) {
@@ -438,10 +594,14 @@
             let correctAnswerText = answers[questionId];
             if (questionId === 'q2' || questionId === 'q5') correctAnswerText = idealAnswers[questionId];
 
-            bkRecordAnswer(LEVEL_KEY, questionId, false);
+            if(typeof bkRecordAnswer === "function") {
+                bkRecordAnswer(LEVEL_KEY, questionId, false);
+            }
             
             nextScreenId = getNextScreenId(questionId);
-            if (nextScreenId === 'screen-result') bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
+            if (nextScreenId === 'screen-result' && typeof bkRecordLevelComplete === "function") {
+                bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
+            }
             
             showFeedback(false, correctAnswerText, "Waktu Habis! ⏰");
         }
@@ -455,8 +615,13 @@
             if (screenId.startsWith('screen-q')) {
                 startTimer(screenId.replace('screen-', ''));
             }
+            
             if (screenId === 'screen-dashboard') {
-                bkRenderDashboard();
+                if(typeof bkRenderDashboard === "function") bkRenderDashboard();
+                renderDashboardAvatar();
+            }
+            if (screenId === 'screen-avatar') {
+                initAvatarScreen();
             }
         }
 
@@ -471,7 +636,6 @@
             }
         }
 
-        // Logic Drag/Click Word yang fleksibel untuk setiap layar aktif
         function addWord(element) {
             if (element.classList.contains('used')) return;
             const activeScreen = document.querySelector('.screen.active');
@@ -503,19 +667,14 @@
 
             nextScreenId = getNextScreenId(questionId);
 
-            // Pilihan Ganda (Q1, Q4)
             if (questionId === 'q1' || questionId === 'q4') {
                 isCorrect = (selectedAnswer === answers[questionId]);
                 correctAnswerText = answers[questionId];
-            } 
-            // Input Teks (Q2, Q5)
-            else if (questionId === 'q2' || questionId === 'q5') {
+            } else if (questionId === 'q2' || questionId === 'q5') {
                 const input = document.getElementById('input-' + questionId).value.toLowerCase().trim();
                 isCorrect = answers[questionId].some(ans => input.includes(ans.toLowerCase()));
                 correctAnswerText = idealAnswers[questionId]; 
-            } 
-            // Blok Kata (Q3, Q6)
-            else if (questionId === 'q3' || questionId === 'q6') {
+            } else if (questionId === 'q3' || questionId === 'q6') {
                 const activeScreen = document.querySelector('.screen.active');
                 const blocks = activeScreen.querySelectorAll('.answer-area .word-block');
                 let userSentence = Array.from(blocks).map(b => b.innerText).join(' ').trim();
@@ -523,9 +682,14 @@
                 correctAnswerText = answers[questionId];
             }
 
-            bkRecordAnswer(LEVEL_KEY, questionId, isCorrect);
+            if(typeof bkRecordAnswer === "function") {
+                bkRecordAnswer(LEVEL_KEY, questionId, isCorrect);
+            }
+
             if (isCorrect) correctCount++;
-            if (nextScreenId === 'screen-result') bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
+            if (nextScreenId === 'screen-result' && typeof bkRecordLevelComplete === "function") {
+                bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
+            }
 
             showFeedback(isCorrect, correctAnswerText);
         }
@@ -567,13 +731,13 @@
             } catch (e) { console.log("Audio not supported"); }
         }
 
-        // --- Boot: jika mode retry, tombol "Mulai" langsung ke soal salah pertama ---
+        // --- Boot Sequences ---
         if (isRetryMode && activeOrder.length > 0) {
-            document.querySelector('#screen-home .btn-primary').setAttribute(
-                'onclick', `goToScreen('screen-${activeOrder[0]}')`
-            );
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(`screen-${activeOrder[0]}`).classList.add('active');
+            startTimer(activeOrder[0]);
         }
-        // --- Boot: buka langsung ke Dashboard jika diakses via index.html#dashboard ---
+        
         if (window.location.hash === '#dashboard') {
             goToScreen('screen-dashboard');
         }
