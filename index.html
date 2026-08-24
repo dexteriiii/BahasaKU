@@ -123,6 +123,8 @@
             .btn-next { max-width: 400px; padding: 20px; margin-top: 10px; }
         }
     </style>
+    <!-- LINK RESPONSIVE OVERRIDE DITAMBAHKAN DI SINI -->
+    <link rel="stylesheet" href="responsive.css">
 </head>
 <body>
 
@@ -454,25 +456,22 @@
     <!-- Shared progress/localStorage system (skor, kesalahan, lencana) -->
     <script src="progress.js"></script>
 
-    <!-- === JAVASCRIPT / LOGIKA === -->
+    <!-- SCRIPT BACKSOUND MUSIC DITAMBAHKAN DI SINI -->
+    <script src="bgm.js"></script>
+
+<!-- === JAVASCRIPT / LOGIKA LEVEL 1 === -->
     <script>
-        // === LOGIKA AVATAR (DiceBear & Upload Lokal Base64) ===
+        // === LOGIKA AVATAR ===
         function getAvatarSource(value) {
             if (!value) return `https://api.dicebear.com/7.x/avataaars/svg?seed=Kuki&backgroundColor=b6e3f4`;
-            // Jika diawali dengan 'data:image', berarti itu adalah hasil upload lokal (Base64)
-            if (value.startsWith('data:image')) {
-                return value;
-            }
-            // Jika tidak, berarti itu seed untuk API DiceBear
+            if (value.startsWith('data:image')) return value;
             return `https://api.dicebear.com/7.x/avataaars/svg?seed=${value}&backgroundColor=b6e3f4`;
         }
 
         function renderDashboardAvatar() {
             let savedAvatar = localStorage.getItem('bahasaku_avatar_val') || 'Kuki';
             const img = document.getElementById('dashboard-avatar-img');
-            if (img) {
-                img.src = getAvatarSource(savedAvatar);
-            }
+            if (img) img.src = getAvatarSource(savedAvatar);
         }
 
         function initAvatarScreen() {
@@ -489,7 +488,6 @@
             previewImg.dataset.value = randomSeed;
         }
 
-        // Fungsi membaca file upload dari perangkat user menjadi Base64
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
@@ -498,7 +496,7 @@
                     const base64String = e.target.result;
                     const previewImg = document.getElementById('preview-avatar-img');
                     previewImg.src = base64String;
-                    previewImg.dataset.value = base64String; // Simpan string base64 sementara
+                    previewImg.dataset.value = base64String; 
                 };
                 reader.readAsDataURL(file);
             }
@@ -507,7 +505,6 @@
         function saveAvatar() {
             const valToSave = document.getElementById('preview-avatar-img').dataset.value;
             localStorage.setItem('bahasaku_avatar_val', valToSave);
-            
             renderDashboardAvatar();
             goToScreen('screen-dashboard');
         }
@@ -517,7 +514,6 @@
             const container = document.getElementById(containerId);
             const buttons = container.querySelectorAll('.btn-onboard');
             buttons.forEach(btn => btn.classList.remove('selected'));
-
             buttonElement.classList.add('selected');
 
             const stepNumber = containerId.split('-')[1]; 
@@ -532,6 +528,7 @@
             }
         }
 
+        // === LOGIKA UTAMA LEVEL 1 ===
         let nextScreenId = '';
         let timerInterval;
         const TIME_LIMIT = 30;
@@ -545,28 +542,21 @@
             q5: ["senang bertemu denganmu", "senang berjumpa denganmu", "senang bertemu dengan anda"],
             q6: "Saya adalah seorang siswa"
         };
-
         const idealAnswers = {
             q2: "Permisi, nama saya Almay",
             q5: "Senang bertemu denganmu"
         }
 
         const FULL_ORDER = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'];
-
         const urlParams = new URLSearchParams(window.location.search);
         const retryParam = urlParams.get('retry');
         const isRetryMode = !!retryParam;
-        const activeOrder = isRetryMode
-            ? retryParam.split(',').filter(id => FULL_ORDER.includes(id))
-            : FULL_ORDER;
-
+        const activeOrder = isRetryMode ? retryParam.split(',').filter(id => FULL_ORDER.includes(id)) : FULL_ORDER;
         let correctCount = 0;
 
         function getNextScreenId(questionId) {
             const idx = activeOrder.indexOf(questionId);
-            if (idx === activeOrder.length - 1) {
-                return isRetryMode ? 'screen-dashboard' : 'screen-result';
-            }
+            if (idx === activeOrder.length - 1) return isRetryMode ? 'screen-dashboard' : 'screen-result';
             return `screen-${activeOrder[idx + 1]}`;
         }
 
@@ -590,39 +580,82 @@
             }, 1000);
         }
 
-        function handleTimeout(questionId) {
-            let correctAnswerText = answers[questionId];
-            if (questionId === 'q2' || questionId === 'q5') correctAnswerText = idealAnswers[questionId];
-
-            if(typeof bkRecordAnswer === "function") {
-                bkRecordAnswer(LEVEL_KEY, questionId, false);
-            }
-            
-            nextScreenId = getNextScreenId(questionId);
-            if (nextScreenId === 'screen-result' && typeof bkRecordLevelComplete === "function") {
-                bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
-            }
-            
-            showFeedback(false, correctAnswerText, "Waktu Habis! ⏰");
-        }
-
         function goToScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+                
+                // Reset/buka kunci layar saat pindah soal
+                s.dataset.locked = "false";
+                s.querySelectorAll('button, .word-block, textarea, .answer-area').forEach(el => {
+                    el.style.pointerEvents = 'auto'; 
+                });
+            });
             document.getElementById(screenId).classList.add('active');
             document.getElementById('feedback-popup').classList.remove('show');
             
             clearInterval(timerInterval);
-            if (screenId.startsWith('screen-q')) {
-                startTimer(screenId.replace('screen-', ''));
-            }
+            if (screenId.startsWith('screen-q')) startTimer(screenId.replace('screen-', ''));
             
             if (screenId === 'screen-dashboard') {
                 if(typeof bkRenderDashboard === "function") bkRenderDashboard();
                 renderDashboardAvatar();
             }
-            if (screenId === 'screen-avatar') {
-                initAvatarScreen();
+            if (screenId === 'screen-avatar') initAvatarScreen();
+        }
+
+        function handleTimeout(questionId) {
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen && activeScreen.dataset.locked === "true") return; 
+            if (activeScreen) {
+                activeScreen.dataset.locked = "true";
+                activeScreen.querySelectorAll('button, .word-block, textarea, .answer-area').forEach(el => el.style.pointerEvents = 'none');
             }
+
+            let correctAnswerText = answers[questionId];
+            if (questionId === 'q2' || questionId === 'q5') correctAnswerText = idealAnswers[questionId];
+            if(typeof bkRecordAnswer === "function") bkRecordAnswer(LEVEL_KEY, questionId, false);
+            
+            nextScreenId = getNextScreenId(questionId);
+            if (nextScreenId === 'screen-result' && typeof bkRecordLevelComplete === "function") {
+                bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
+            }
+            showFeedback(false, correctAnswerText, "Waktu Habis! ⏰");
+        }
+
+        function checkAnswer(questionId, selectedAnswer = '') {
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen && activeScreen.dataset.locked === "true") return;
+            if (activeScreen) {
+                activeScreen.dataset.locked = "true";
+                activeScreen.querySelectorAll('button, .word-block, textarea, .answer-area').forEach(el => el.style.pointerEvents = 'none');
+            }
+
+            clearInterval(timerInterval);
+            let isCorrect = false;
+            let correctAnswerText = '';
+            nextScreenId = getNextScreenId(questionId);
+
+            if (questionId === 'q1' || questionId === 'q4') {
+                isCorrect = (selectedAnswer === answers[questionId]);
+                correctAnswerText = answers[questionId];
+            } else if (questionId === 'q2' || questionId === 'q5') {
+                const input = document.getElementById('input-' + questionId).value.toLowerCase().trim();
+                isCorrect = answers[questionId].some(ans => input.includes(ans.toLowerCase()));
+                correctAnswerText = idealAnswers[questionId]; 
+            } else if (questionId === 'q3' || questionId === 'q6') {
+                const activeScreenNode = document.querySelector('.screen.active');
+                const blocks = activeScreenNode.querySelectorAll('.answer-area .word-block');
+                let userSentence = Array.from(blocks).map(b => b.innerText).join(' ').trim();
+                isCorrect = (userSentence.toLowerCase() === answers[questionId].toLowerCase());
+                correctAnswerText = answers[questionId];
+            }
+
+            if(typeof bkRecordAnswer === "function") bkRecordAnswer(LEVEL_KEY, questionId, isCorrect);
+            if (isCorrect) correctCount++;
+            if (nextScreenId === 'screen-result' && typeof bkRecordLevelComplete === "function") {
+                bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
+            }
+            showFeedback(isCorrect, correctAnswerText);
         }
 
         function playAudio(text) {
@@ -636,63 +669,52 @@
             }
         }
 
+        // ========================================================
+        // BUG FIX: LOGIKA SUSUN KATA (WORD BLOCKS) DIPERBARUI
+        // ========================================================
+
+        // 1. Berikan ID rahasia unik ke setiap kata saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            let counter = 0;
+            document.querySelectorAll('.word-bank .word-block').forEach(el => {
+                el.dataset.wordId = 'wb-' + counter++;
+            });
+        });
+
+        // 2. Fungsi menambahkan kata ke area jawaban
         function addWord(element) {
             if (element.classList.contains('used')) return;
             const activeScreen = document.querySelector('.screen.active');
             const answerArea = activeScreen.querySelector('.answer-area');
+            
+            // Kloning elemen dan simpan ID aslinya
             const clone = element.cloneNode(true);
+            clone.dataset.sourceId = element.dataset.wordId; 
+            
             answerArea.appendChild(clone);
             element.classList.add('used');
         }
 
+        // 3. Fungsi menghapus/mengembalikan kata saat diklik di area jawaban
         function removeWord(event) {
+            const activeScreen = document.querySelector('.screen.active');
+            // Jika sudah diklik Check Answer (layar terkunci), jangan izinkan hapus
+            if (activeScreen && activeScreen.dataset.locked === "true") return; 
+
             if (event.target.classList.contains('word-block')) {
-                const text = event.target.innerText;
-                event.target.remove();
-                const activeScreen = document.querySelector('.screen.active');
-                const bankWords = activeScreen.querySelector('.word-bank').children;
-                for (let word of bankWords) {
-                    if (word.innerText === text) {
-                        word.classList.remove('used');
-                        break;
-                    }
+                const sourceId = event.target.dataset.sourceId;
+                
+                // Cari blok asal di bawah berdasarkan ID unik yang disimpan tadi
+                const originalElement = activeScreen.querySelector(`.word-bank .word-block[data-word-id="${sourceId}"]`);
+                if (originalElement) {
+                    originalElement.classList.remove('used');
                 }
+                
+                // Hapus kata yang di atas
+                event.target.remove();
             }
         }
-
-        function checkAnswer(questionId, selectedAnswer = '') {
-            clearInterval(timerInterval);
-            let isCorrect = false;
-            let correctAnswerText = '';
-
-            nextScreenId = getNextScreenId(questionId);
-
-            if (questionId === 'q1' || questionId === 'q4') {
-                isCorrect = (selectedAnswer === answers[questionId]);
-                correctAnswerText = answers[questionId];
-            } else if (questionId === 'q2' || questionId === 'q5') {
-                const input = document.getElementById('input-' + questionId).value.toLowerCase().trim();
-                isCorrect = answers[questionId].some(ans => input.includes(ans.toLowerCase()));
-                correctAnswerText = idealAnswers[questionId]; 
-            } else if (questionId === 'q3' || questionId === 'q6') {
-                const activeScreen = document.querySelector('.screen.active');
-                const blocks = activeScreen.querySelectorAll('.answer-area .word-block');
-                let userSentence = Array.from(blocks).map(b => b.innerText).join(' ').trim();
-                isCorrect = (userSentence.toLowerCase() === answers[questionId].toLowerCase());
-                correctAnswerText = answers[questionId];
-            }
-
-            if(typeof bkRecordAnswer === "function") {
-                bkRecordAnswer(LEVEL_KEY, questionId, isCorrect);
-            }
-
-            if (isCorrect) correctCount++;
-            if (nextScreenId === 'screen-result' && typeof bkRecordLevelComplete === "function") {
-                bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
-            }
-
-            showFeedback(isCorrect, correctAnswerText);
-        }
+        // ========================================================
 
         function showFeedback(isCorrect, correctAnswer, customTitle = null) {
             const popup = document.getElementById('feedback-popup');
@@ -701,7 +723,6 @@
             const nextBtn = document.getElementById('btn-next-screen');
 
             popup.classList.remove('feedback-success', 'feedback-error');
-
             if (isCorrect) {
                 popup.classList.add('feedback-success');
                 title.innerText = customTitle ? customTitle : "Amazing! 🌟";
@@ -711,7 +732,6 @@
                 title.innerText = customTitle ? customTitle : "Ups.. that's wrong 😕";
                 playBeep(300, 300);
             }
-
             answerText.innerText = correctAnswer;
             nextBtn.onclick = () => goToScreen(nextScreenId);
             popup.classList.add('show');
@@ -728,19 +748,16 @@
                 gainNode.connect(audioCtx.destination);
                 oscillator.start();
                 setTimeout(() => oscillator.stop(), duration);
-            } catch (e) { console.log("Audio not supported"); }
+            } catch (e) {}
         }
 
-        // --- Boot Sequences ---
+        // Boot
         if (isRetryMode && activeOrder.length > 0) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(`screen-${activeOrder[0]}`).classList.add('active');
             startTimer(activeOrder[0]);
         }
-        
-        if (window.location.hash === '#dashboard') {
-            goToScreen('screen-dashboard');
-        }
+        if (window.location.hash === '#dashboard') goToScreen('screen-dashboard');
     </script>
 </body>
 </html>

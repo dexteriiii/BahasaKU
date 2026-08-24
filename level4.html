@@ -287,18 +287,14 @@
     <!-- Shared backsound music system -->
     <script src="bgm.js"></script>
 
-    <!-- === JAVASCRIPT / LOGIKA LEVEL 4 === -->
+<!-- === JAVASCRIPT / LOGIKA LEVEL 4 === -->
     <script>
         let nextScreenId = '';
         let timerInterval;
         const TIME_LIMIT = 20; 
-        
-        // Kunci Data LocalStorage untuk dicatat di Progress.js
         const LEVEL_KEY = 'level4';
-        
-        let correctCount = 0; // Menghitung jawaban benar
+        let correctCount = 0; 
 
-        // 1. Kunci Jawaban Lengkap (Sesuai dengan 5 Pertanyaan)
         const answers = {
             q1: "B. He wanted to reach an apple tree across the river.",
             q2: "C. The dove dropped a leaf into the river near the ant.",
@@ -329,40 +325,50 @@
             }, 1000);
         }
 
-        function handleTimeout(questionId) {
-            let correctAnswerText = answers[questionId];
+        // === BUG FIX PENGUNCI LAYAR LEVEL 4 ===
+        function goToScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+                s.dataset.locked = "false";
+                s.querySelectorAll('button').forEach(el => el.style.pointerEvents = 'auto');
+            });
+            document.getElementById(screenId).classList.add('active');
+            document.getElementById('feedback-popup').classList.remove('show');
             
+            const video = document.getElementById('storyVideo');
+            if(video) video.pause();
+
+            clearInterval(timerInterval);
+            if (screenId.startsWith('screen-q')) startTimer(screenId.replace('screen-', ''));
+        }
+
+        function handleTimeout(questionId) {
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen && activeScreen.dataset.locked === "true") return;
+            if (activeScreen) {
+                activeScreen.dataset.locked = "true";
+                activeScreen.querySelectorAll('button').forEach(el => el.style.pointerEvents = 'none');
+            }
+
+            let correctAnswerText = answers[questionId];
             const currentIndex = FULL_ORDER.indexOf(questionId);
             nextScreenId = (currentIndex === FULL_ORDER.length - 1) ? 'screen-result' : `screen-${FULL_ORDER[currentIndex + 1]}`;
             
-            // Catat kesalahan jika ada progress.js
             if(typeof bkRecordAnswer === "function") {
                 bkRecordAnswer(LEVEL_KEY, questionId, false);
                 if (nextScreenId === 'screen-result') bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
             }
-            
             showFeedback(false, correctAnswerText, "Waktu Habis! ⏰");
         }
 
-        function goToScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            document.getElementById('feedback-popup').classList.remove('show');
-            
-            // Menghentikan video jika berpindah halaman
-            const video = document.getElementById('storyVideo');
-            if(video) {
-                video.pause();
-            }
-
-            clearInterval(timerInterval);
-            // Mulai timer hanya saat membuka layar soal
-            if (screenId.startsWith('screen-q')) {
-                startTimer(screenId.replace('screen-', ''));
-            }
-        }
-
         function checkAnswer(questionId, selectedAnswer) {
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen && activeScreen.dataset.locked === "true") return;
+            if (activeScreen) {
+                activeScreen.dataset.locked = "true";
+                activeScreen.querySelectorAll('button').forEach(el => el.style.pointerEvents = 'none');
+            }
+
             clearInterval(timerInterval);
             let isCorrect = false;
             let correctAnswerText = answers[questionId];
@@ -375,14 +381,13 @@
                 correctCount++;
             }
 
-            // Integrasi pencatatan skor (Jika file Progress.js tersedia)
             if(typeof bkRecordAnswer === "function") {
                 bkRecordAnswer(LEVEL_KEY, questionId, isCorrect);
                 if (nextScreenId === 'screen-result') bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
             }
-
             showFeedback(isCorrect, correctAnswerText);
         }
+        // =====================================
 
         function showFeedback(isCorrect, correctAnswer, customTitle = null) {
             const popup = document.getElementById('feedback-popup');
@@ -391,7 +396,6 @@
             const nextBtn = document.getElementById('btn-next-screen');
 
             popup.classList.remove('feedback-success', 'feedback-error');
-
             if (isCorrect) {
                 popup.classList.add('feedback-success');
                 title.innerText = customTitle ? customTitle : "Amazing! 🌟";

@@ -267,35 +267,25 @@
         const TIME_LIMIT = 20; 
         const LEVEL_KEY = 'level3';
 
-        // Kunci Jawaban
         const answers = {
             q1: "7 PM",
             q2: "Chicken sandwich and coffee",
             q3: "Gate 12"
         };
-
         const FULL_ORDER = ['q1', 'q2', 'q3'];
 
-        // Data Teks untuk TTS (Text-to-Speech)
         const audioTexts = {
             1: "Listen carefully. Alex says: Hey, Maria. Are we still going to the cinema at 7 PM? Maria replies: Actually, I have to finish my homework first. Can we meet at 8 PM instead?",
             2: "Listen carefully. Waiter says: Welcome to Star Restaurant. Are you ready to order? Customer replies: Yes, I would like a chicken sandwich and a cup of coffee, please.",
             3: "Listen carefully. Announcer says: Attention all passengers. Flight 5 0 2 to Tokyo is now boarding at Gate 12. Please have your boarding passes ready."
         };
 
-        // --- Mode "Ulangi Soal yang Salah" ---
-        // Catatan: karena audio hanya boleh diputar satu kali per sesi, mode retry
-        // langsung menuju layar soal (tanpa mengulang audio) untuk soal yang salah saja.
         const urlParams = new URLSearchParams(window.location.search);
         const retryParam = urlParams.get('retry');
         const isRetryMode = !!retryParam;
-        const activeOrder = isRetryMode
-            ? retryParam.split(',').filter(id => FULL_ORDER.includes(id))
-            : FULL_ORDER;
-
+        const activeOrder = isRetryMode ? retryParam.split(',').filter(id => FULL_ORDER.includes(id)) : FULL_ORDER;
         let correctCount = 0;
 
-        // Rute normal: Q1 -> Audio 2 -> Q2 -> Audio 3 -> Q3 -> Hasil
         const routeMap = {
             'q1': 'screen-listen-2',
             'q2': 'screen-listen-3',
@@ -311,14 +301,12 @@
             return routeMap[questionId];
         }
 
-        // Logika Audio Listening (Satu Kali Play)
         function playAudio(audioNumber) {
             const playBtn = document.getElementById(`btn-play-${audioNumber}`);
             const nextBtn = document.getElementById(`btn-next-${audioNumber}`);
             
             playBtn.disabled = true;
             playBtn.innerText = "🔊 Sedang memutar audio...";
-
             const conversationText = audioTexts[audioNumber];
 
             if ('speechSynthesis' in window) {
@@ -326,12 +314,10 @@
                 let utterance = new SpeechSynthesisUtterance(conversationText);
                 utterance.lang = 'en-US';
                 utterance.rate = 0.9; 
-                
                 utterance.onend = function() {
                     playBtn.innerText = "✅ Audio Selesai Diputar";
                     nextBtn.style.display = "block";
                 };
-                
                 window.speechSynthesis.speak(utterance);
             } else {
                 alert("Browser kamu tidak mendukung fitur suara. Soal akan langsung dimulai.");
@@ -359,45 +345,57 @@
             }, 1000);
         }
 
-        function handleTimeout(questionId) {
-            let correctAnswerText = answers[questionId];
-            
-            bkRecordAnswer(LEVEL_KEY, questionId, false);
-            nextScreenId = getNextScreenId(questionId);
-            if (nextScreenId === 'screen-result') bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
-            
-            showFeedback(false, correctAnswerText, "Waktu Habis! ⏰");
-        }
-
+        // === BUG FIX PENGUNCI LAYAR LEVEL 3 ===
         function goToScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+                s.dataset.locked = "false";
+                s.querySelectorAll('button').forEach(el => el.style.pointerEvents = 'auto');
+            });
             document.getElementById(screenId).classList.add('active');
             document.getElementById('feedback-popup').classList.remove('show');
             
             clearInterval(timerInterval);
-            // Mulai timer hanya saat membuka layar soal
-            if (screenId.startsWith('screen-q')) {
-                startTimer(screenId.replace('screen-', ''));
+            if (screenId.startsWith('screen-q')) startTimer(screenId.replace('screen-', ''));
+        }
+
+        function handleTimeout(questionId) {
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen && activeScreen.dataset.locked === "true") return;
+            if (activeScreen) {
+                activeScreen.dataset.locked = "true";
+                activeScreen.querySelectorAll('button').forEach(el => el.style.pointerEvents = 'none');
             }
+
+            let correctAnswerText = answers[questionId];
+            if(typeof bkRecordAnswer === "function") bkRecordAnswer(LEVEL_KEY, questionId, false);
+            nextScreenId = getNextScreenId(questionId);
+            if (nextScreenId === 'screen-result' && typeof bkRecordLevelComplete === "function") bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
+            showFeedback(false, correctAnswerText, "Waktu Habis! ⏰");
         }
 
         function checkAnswer(questionId, selectedAnswer) {
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen && activeScreen.dataset.locked === "true") return;
+            if (activeScreen) {
+                activeScreen.dataset.locked = "true";
+                activeScreen.querySelectorAll('button').forEach(el => el.style.pointerEvents = 'none');
+            }
+
             clearInterval(timerInterval);
             let isCorrect = false;
             let correctAnswerText = answers[questionId];
-
             nextScreenId = getNextScreenId(questionId);
 
-            if (selectedAnswer === answers[questionId]) {
-                isCorrect = true;
-            }
+            if (selectedAnswer === answers[questionId]) isCorrect = true;
 
-            bkRecordAnswer(LEVEL_KEY, questionId, isCorrect);
+            if(typeof bkRecordAnswer === "function") bkRecordAnswer(LEVEL_KEY, questionId, isCorrect);
             if (isCorrect) correctCount++;
-            if (nextScreenId === 'screen-result') bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
+            if (nextScreenId === 'screen-result' && typeof bkRecordLevelComplete === "function") bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
 
             showFeedback(isCorrect, correctAnswerText);
         }
+        // =====================================
 
         function showFeedback(isCorrect, correctAnswer, customTitle = null) {
             const popup = document.getElementById('feedback-popup');
@@ -406,7 +404,6 @@
             const nextBtn = document.getElementById('btn-next-screen');
 
             popup.classList.remove('feedback-success', 'feedback-error');
-
             if (isCorrect) {
                 popup.classList.add('feedback-success');
                 title.innerText = customTitle ? customTitle : "Amazing! 🌟";
@@ -419,11 +416,8 @@
 
             answerText.innerText = correctAnswer;
             nextBtn.onclick = () => {
-                if (nextScreenId === 'REDIRECT_DASHBOARD') {
-                    window.location.href = 'index.html#dashboard';
-                } else {
-                    goToScreen(nextScreenId);
-                }
+                if (nextScreenId === 'REDIRECT_DASHBOARD') window.location.href = 'index.html#dashboard';
+                else goToScreen(nextScreenId);
             };
             popup.classList.add('show');
         }
@@ -436,11 +430,8 @@
             sfx.play().catch(error => console.log("Gagal memutar audio:", error));
         }
 
-        // --- Boot: jika mode retry, tombol "Mulai" langsung ke soal salah pertama (lewati audio) ---
         if (isRetryMode && activeOrder.length > 0) {
-            document.querySelector('#screen-home .btn-primary').setAttribute(
-                'onclick', `goToScreen('screen-${activeOrder[0]}')`
-            );
+            document.querySelector('#screen-home .btn-primary').setAttribute('onclick', `goToScreen('screen-${activeOrder[0]}')`);
         }
     </script>
 </body>

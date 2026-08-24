@@ -278,7 +278,6 @@
         const TIME_LIMIT = 25; 
         const LEVEL_KEY = 'level2';
 
-        // Kunci Jawaban Diperbarui
         const answers = {
             q1: "had",
             q2: "to go",
@@ -288,22 +287,15 @@
         };
 
         const FULL_ORDER = ['q1', 'q2', 'q3', 'q4', 'q5'];
-
-        // --- Mode "Ulangi Soal yang Salah" (dipicu dari Dashboard via ?retry=q2,q5) ---
         const urlParams = new URLSearchParams(window.location.search);
         const retryParam = urlParams.get('retry');
         const isRetryMode = !!retryParam;
-        const activeOrder = isRetryMode
-            ? retryParam.split(',').filter(id => FULL_ORDER.includes(id))
-            : FULL_ORDER;
-
+        const activeOrder = isRetryMode ? retryParam.split(',').filter(id => FULL_ORDER.includes(id)) : FULL_ORDER;
         let correctCount = 0;
 
         function getNextScreenId(questionId) {
             const idx = activeOrder.indexOf(questionId);
-            if (idx === activeOrder.length - 1) {
-                return isRetryMode ? 'REDIRECT_DASHBOARD' : 'screen-result';
-            }
+            if (idx === activeOrder.length - 1) return isRetryMode ? 'REDIRECT_DASHBOARD' : 'screen-result';
             return `screen-${activeOrder[idx + 1]}`;
         }
 
@@ -327,44 +319,57 @@
             }, 1000);
         }
 
-        function handleTimeout(questionId) {
-            let correctAnswerText = answers[questionId];
-            
-            bkRecordAnswer(LEVEL_KEY, questionId, false);
-            nextScreenId = getNextScreenId(questionId);
-            if (nextScreenId === 'screen-result') bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
-            
-            showFeedback(false, correctAnswerText, "Waktu Habis! ⏰");
-        }
-
+        // === BUG FIX PENGUNCI LAYAR LEVEL 2 ===
         function goToScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+                s.dataset.locked = "false";
+                s.querySelectorAll('button').forEach(el => el.style.pointerEvents = 'auto');
+            });
             document.getElementById(screenId).classList.add('active');
             document.getElementById('feedback-popup').classList.remove('show');
             
             clearInterval(timerInterval);
-            if (screenId.startsWith('screen-q')) {
-                startTimer(screenId.replace('screen-', ''));
+            if (screenId.startsWith('screen-q')) startTimer(screenId.replace('screen-', ''));
+        }
+
+        function handleTimeout(questionId) {
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen && activeScreen.dataset.locked === "true") return;
+            if (activeScreen) {
+                activeScreen.dataset.locked = "true";
+                activeScreen.querySelectorAll('button').forEach(el => el.style.pointerEvents = 'none');
             }
+
+            let correctAnswerText = answers[questionId];
+            if(typeof bkRecordAnswer === "function") bkRecordAnswer(LEVEL_KEY, questionId, false);
+            nextScreenId = getNextScreenId(questionId);
+            if (nextScreenId === 'screen-result' && typeof bkRecordLevelComplete === "function") bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
+            showFeedback(false, correctAnswerText, "Waktu Habis! ⏰");
         }
 
         function checkAnswer(questionId, selectedAnswer) {
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen && activeScreen.dataset.locked === "true") return;
+            if (activeScreen) {
+                activeScreen.dataset.locked = "true";
+                activeScreen.querySelectorAll('button').forEach(el => el.style.pointerEvents = 'none');
+            }
+
             clearInterval(timerInterval);
             let isCorrect = false;
             let correctAnswerText = answers[questionId];
-
             nextScreenId = getNextScreenId(questionId);
 
-            if (selectedAnswer === answers[questionId]) {
-                isCorrect = true;
-            }
+            if (selectedAnswer === answers[questionId]) isCorrect = true;
 
-            bkRecordAnswer(LEVEL_KEY, questionId, isCorrect);
+            if(typeof bkRecordAnswer === "function") bkRecordAnswer(LEVEL_KEY, questionId, isCorrect);
             if (isCorrect) correctCount++;
-            if (nextScreenId === 'screen-result') bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
+            if (nextScreenId === 'screen-result' && typeof bkRecordLevelComplete === "function") bkRecordLevelComplete(LEVEL_KEY, correctCount, FULL_ORDER.length);
 
             showFeedback(isCorrect, correctAnswerText);
         }
+        // =====================================
 
         function showFeedback(isCorrect, correctAnswer, customTitle = null) {
             const popup = document.getElementById('feedback-popup');
@@ -373,7 +378,6 @@
             const nextBtn = document.getElementById('btn-next-screen');
 
             popup.classList.remove('feedback-success', 'feedback-error');
-
             if (isCorrect) {
                 popup.classList.add('feedback-success');
                 title.innerText = customTitle ? customTitle : "Amazing! 🌟";
@@ -385,13 +389,9 @@
             }
 
             answerText.innerText = correctAnswer;
-            // Jika mode retry sudah selesai, kembali ke Dashboard di index.html
             nextBtn.onclick = () => {
-                if (nextScreenId === 'REDIRECT_DASHBOARD') {
-                    window.location.href = 'index.html#dashboard';
-                } else {
-                    goToScreen(nextScreenId);
-                }
+                if (nextScreenId === 'REDIRECT_DASHBOARD') window.location.href = 'index.html#dashboard';
+                else goToScreen(nextScreenId);
             };
             popup.classList.add('show');
         }
@@ -407,14 +407,11 @@
                 gainNode.connect(audioCtx.destination);
                 oscillator.start();
                 setTimeout(() => oscillator.stop(), duration);
-            } catch (e) { console.log("Audio not supported"); }
+            } catch (e) {}
         }
 
-        // --- Boot: jika mode retry, tombol "Mulai" langsung ke soal salah pertama ---
         if (isRetryMode && activeOrder.length > 0) {
-            document.querySelector('#screen-home .btn-primary').setAttribute(
-                'onclick', `goToScreen('screen-${activeOrder[0]}')`
-            );
+            document.querySelector('#screen-home .btn-primary').setAttribute('onclick', `goToScreen('screen-${activeOrder[0]}')`);
         }
     </script>
 </body>
