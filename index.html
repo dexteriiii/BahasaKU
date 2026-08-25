@@ -429,7 +429,8 @@
                 <div id="dashboard-scoreboard"></div>
             </div>
             
-            <button class="btn-primary" style="background-color: var(--success); font-size: 20px; box-shadow: 0 5px 15px rgba(124, 186, 65, 0.4);" onclick="goToScreen('screen-q1')">▶️ MULAI LEVEL 1 SEKARANG</button>
+            <!-- TOMBOL DINAMIS: ID DITAMBAHKAN DI SINI -->
+            <button id="btn-main-action" class="btn-primary" style="background-color: var(--success); font-size: 20px; box-shadow: 0 5px 15px rgba(124, 186, 65, 0.4);" onclick="goToScreen('screen-q1')">▶️ MULAI LEVEL 1 SEKARANG</button>
 
             <div class="dashboard-section" style="margin-top: 30px;">
                 <h3>Tinjauan Kesalahan</h3>
@@ -445,11 +446,11 @@
             <button class="btn-primary" style="background-color: #9b51e0; font-size: 18px; margin-top: 15px; box-shadow: 0 5px 15px rgba(155, 81, 224, 0.4);" onclick="location.href='kamus.html'">
                 📖 Buka Kamus & Pelafalan
             </button>
-            <a href="materi.html" class="menu-card">
-    <div class="menu-icon"></div>
-    <h3>Materi</h3>
-    <p>Video & ringkasan pembelajaran</p>
-</a>
+            <a href="materi.html" class="menu-card" style="text-decoration: none; display: block; background: white; border-radius: 14px; padding: 15px 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-top: 15px; width: 100%; max-width: 400px; text-align: center; border: 2px solid #E0E0E0;">
+                <div class="menu-icon" style="font-size: 30px;">🎥</div>
+                <h3 style="color: var(--text-dark); margin-bottom: 5px;">Materi</h3>
+                <p style="color: var(--text-gray); font-size: 14px; margin-bottom: 0;">Video & ringkasan pembelajaran</p>
+            </a>
             <button class="btn-reset-progress" style="margin-top: 25px; margin-bottom: 30px;" onclick="bkResetProgress()">Reset semua progres</button>
         </div>
 
@@ -700,10 +701,7 @@
             const clone = element.cloneNode(true);
             clone.dataset.sourceId = element.dataset.wordId; 
             
-            // =======================================================
-            // BUG FIX: Hapus atribut onclick dari elemen kloning
-            // agar tidak memicu fungsi addWord() lagi saat diklik
-            // =======================================================
+            // Hapus atribut onclick dari elemen kloning
             clone.removeAttribute('onclick');
             
             answerArea.appendChild(clone);
@@ -713,19 +711,14 @@
         // 3. Fungsi menghapus/mengembalikan kata saat diklik di area jawaban
         function removeWord(event) {
             const activeScreen = document.querySelector('.screen.active');
-            // Jika sudah diklik Check Answer (layar terkunci), jangan izinkan hapus
             if (activeScreen && activeScreen.dataset.locked === "true") return; 
 
             if (event.target.classList.contains('word-block')) {
                 const sourceId = event.target.dataset.sourceId;
-                
-                // Cari blok asal di bawah berdasarkan ID unik yang disimpan tadi
                 const originalElement = activeScreen.querySelector(`.word-bank .word-block[data-word-id="${sourceId}"]`);
                 if (originalElement) {
                     originalElement.classList.remove('used');
                 }
-                
-                // Hapus kata yang di atas
                 event.target.remove();
             }
         }

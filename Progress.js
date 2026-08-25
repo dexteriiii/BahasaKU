@@ -1,4 +1,4 @@
-  /* ==================================================================
+/* ==================================================================
     BahasaKu - Shared Progress & Achievement System
     Menyimpan skor, mencatat kesalahan, dan membuka lencana
     menggunakan localStorage. Di-include oleh index.html, level2.html,
@@ -79,12 +79,6 @@
     }
   }
 
-  /**
-   * Catat satu jawaban. Dipanggil dari checkAnswer() / handleTimeout()
-   * di setiap level. Jika jawaban salah, ID soal disimpan ke daftar
-   * "mistakes" agar bisa diulang lewat Dashboard. Jika sekarang dijawab
-   * benar (misalnya saat mode retry), ID tsb dihapus dari daftar salah.
-   */
   function bkRecordAnswer(level, questionId, isCorrect) {
     const data = bkGetData();
     if (!data[level])
@@ -100,10 +94,6 @@
     bkSaveData(data);
   }
 
-  /**
-   * Catat penyelesaian sebuah level (skor akhir + rekor terbaik),
-   * lalu evaluasi ulang lencana yang berhak dibuka.
-   */
   function bkRecordLevelComplete(level, correct, total) {
     const data = bkGetData();
     if (!data[level])
@@ -125,10 +115,8 @@
   function bkCheckBadges(data) {
     const unlocked = new Set(data.badges || []);
 
-    // Badge Level 1
     if (data.level1 && data.level1.completed) unlocked.add("first_step");
 
-    // Badge Flawless (Cek semua level dari 1 sampai 4)
     ["level1", "level2", "level3", "level4"].forEach((lv) => {
       const d = data[lv];
       if (d && d.completed && d.score && d.score.correct === d.score.total) {
@@ -136,7 +124,6 @@
       }
     });
 
-    // Badge Level 3 (Sempurna di Listening)
     if (
       data.level3 &&
       data.level3.completed &&
@@ -146,12 +133,10 @@
       unlocked.add("sharp_ear");
     }
 
-    // Badge Level 4 (Tamat Video)
     if (data.level4 && data.level4.completed) {
       unlocked.add("movie_buff");
     }
 
-    // Badge Master (Tamat semua level)
     if (
       data.level1 &&
       data.level1.completed &&
@@ -185,12 +170,6 @@
     }
   }
 
-  /* ==================================================================
-    RENDER DASHBOARD
-    Dipanggil setiap kali layar #screen-dashboard dibuka (lihat
-    goToScreen() di masing-masing level). Hanya berefek jika elemen
-    dashboard ada di halaman (yaitu di index.html).
-    ================================================================== */
   function bkRenderDashboard() {
     const data = bkGetData();
     const levels = [
@@ -220,7 +199,6 @@
       },
     ];
 
-    // --- Score board ---
     const scoreBoard = document.getElementById("dashboard-scoreboard");
     if (scoreBoard) {
       scoreBoard.innerHTML = levels
@@ -248,7 +226,26 @@
         .join("");
     }
 
-    // --- Mistake review ---
+    const btnMainAction = document.getElementById("btn-main-action");
+    if (btnMainAction) {
+        if (!data.level1 || !data.level1.completed) {
+            btnMainAction.innerText = "▶️ MULAI LEVEL 1 SEKARANG";
+            btnMainAction.onclick = () => goToScreen('screen-q1');
+        } else if (!data.level2 || !data.level2.completed) {
+            btnMainAction.innerText = "▶️ LANJUT LEVEL 2 SEKARANG";
+            btnMainAction.onclick = () => window.location.href = 'level2.html';
+        } else if (!data.level3 || !data.level3.completed) {
+            btnMainAction.innerText = "▶️ LANJUT LEVEL 3 SEKARANG";
+            btnMainAction.onclick = () => window.location.href = 'level3.html';
+        } else if (!data.level4 || !data.level4.completed) {
+            btnMainAction.innerText = "▶️ LANJUT LEVEL 4 SEKARANG";
+            btnMainAction.onclick = () => window.location.href = 'level4.html';
+        } else {
+            btnMainAction.innerText = "🎉 SEMUA LEVEL SELESAI (MAIN LAGI)";
+            btnMainAction.onclick = () => goToScreen('screen-q1');
+        }
+    }
+
     const retryContainer = document.getElementById("dashboard-retry");
     if (retryContainer) {
       const withMistakes = levels.filter(
@@ -278,7 +275,6 @@
       }
     }
 
-    // --- Badge gallery ---
     const badgeGallery = document.getElementById("dashboard-badges");
     if (badgeGallery) {
       badgeGallery.innerHTML = BK_BADGES.map((b) => {
