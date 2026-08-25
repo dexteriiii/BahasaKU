@@ -220,7 +220,11 @@
             <section class="section">
                 <h3>🎬 Video Materi</h3>
 
-                <!-- Tampilan Video YouTube (Disembunyikan otomatis oleh script) -->
+                <!--
+                    MODE SEKARANG:
+                    Menampilkan video YouTube sebagai referensi.
+                    Sumber: https://youtu.be/k2_2H3qT9q0?si=pX0UFXDab724XIK8
+                -->
                 <div class="video-wrapper" id="youtube-video">
                     <iframe
                         src="https://www.youtube.com/embed/k2_2H3qT9q0"
@@ -230,11 +234,17 @@
                     </iframe>
                 </div>
 
-                <!-- Tampilan Video Lokal (Menjadi default yang tampil) -->
+                <!--
+                    MODE LOKAL:
+                    Setelah file video tersedia, pindahkan video ke:
+                    assets/video/materi-inggris.mp4
+
+                    Lalu ubah:
+                    const USE_LOCAL_VIDEO = true;
+                -->
                 <div class="local-video" id="local-video">
                     <video controls preload="metadata">
-                        <!-- Pastikan ekstensi file (.mp4) ditulis dengan benar -->
-                        <source src="vidio/materi.mp4" type="video/mp4">
+                        <source src="vidio/materi" type="video/mp4">
                         Browser kamu tidak mendukung pemutar video HTML5.
                     </video>
                 </div>
@@ -242,7 +252,9 @@
                 
 
                 <p class="video-note">
-                    Pastikan file video berada di dalam folder <strong>vidio/</strong> dengan nama <strong>materi.mp4</strong> agar video dapat diputar dengan baik.
+                    Untuk versi final aplikasi, video dapat ditempatkan di folder lokal
+                    <strong>assets/video/</strong> sehingga halaman materi tidak bergantung
+                    pada embed YouTube.
                 </p>
             </section>
 
@@ -291,8 +303,9 @@
     </div>
 
     <script>
-        // TRUE = Otomatis tampilkan video lokal saat web dibuka
-        const USE_LOCAL_VIDEO = true;
+        // false = tampilkan YouTube
+        // true  = tampilkan video lokal
+        const USE_LOCAL_VIDEO = false;
 
         function setVideoMode() {
             const youtube = document.getElementById('youtube-video');
