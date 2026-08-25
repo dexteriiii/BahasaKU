@@ -700,6 +700,12 @@
             const clone = element.cloneNode(true);
             clone.dataset.sourceId = element.dataset.wordId; 
             
+            // =======================================================
+            // BUG FIX: Hapus atribut onclick dari elemen kloning
+            // agar tidak memicu fungsi addWord() lagi saat diklik
+            // =======================================================
+            clone.removeAttribute('onclick');
+            
             answerArea.appendChild(clone);
             element.classList.add('used');
         }
