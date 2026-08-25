@@ -130,7 +130,6 @@
     <script>
         // =========================================================================
         // DATABASE LOKAL KOSAKATA 
-        // Tambahkan kata sebanyak apapun di sini (bisa sampai ribuan!)
         // =========================================================================
         const localWordBank = [
             "about", "above", "across", "act", "action", "active", "activity", "actor", "actual", "add", "address", "admit",
@@ -186,23 +185,18 @@
         ];
 
         let currentAudioUrl = null;
-        const CACHE_KEY = 'bahasaku_dictionary_cache_v2';
+        const CACHE_KEY = 'bahasaku_dictionary_cache_v3'; // Cache key diperbarui ke V3 untuk menghapus sisa error lama
 
         // Render A-Z Dictionary pada saat halaman dimuat
         function renderDictionary(filterText = "") {
             const wrapper = document.getElementById('dictionary-wrapper');
-            wrapper.innerHTML = ''; // Bersihkan
+            wrapper.innerHTML = ''; 
 
-            // Filter kata berdasarkan input user
             let filteredWords = localWordBank.filter(w => w.toLowerCase().includes(filterText.toLowerCase()));
-            
-            // Urutkan sesuai abjad
             filteredWords.sort();
 
-            // Tampilkan pesan kosong jika tidak ada di kotak
             document.getElementById('empty-msg').style.display = filteredWords.length === 0 ? 'block' : 'none';
 
-            // Kelompokkan berdasarkan huruf pertama
             const grouped = {};
             filteredWords.forEach(word => {
                 const firstLetter = word.charAt(0).toUpperCase();
@@ -210,14 +204,12 @@
                 grouped[firstLetter].push(word);
             });
 
-            // Buat HTML untuk setiap huruf
             for (const letter in grouped) {
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'letter-group';
                 
                 let html = `<div class="letter-title">${letter}</div><div class="word-grid">`;
                 grouped[letter].forEach(word => {
-                    // Ketika kotak diklik, langsung isi search bar & panggil API
                     html += `<div class="word-box" data-word="${escapeHtml(word)}">${escapeHtml(word)}</div>`;
                 });
                 html += `</div>`;
@@ -236,19 +228,17 @@
             clickWordBox(word);
         });
 
-        // Jalankan saat pertama kali buka halaman
         window.onload = () => {
             renderDictionary();
-            // Tampilkan statistik total kata
             document.getElementById('stats-badge').innerText = `Tersedia ${localWordBank.length} Kata Tersortir A-Z (Pencarian Online Tanpa Batas)`;
         };
 
-        // Live Search: Filter kotak otomatis saat mengetik
+        // Live Search
         document.getElementById("search-input").addEventListener("input", function(e) {
             renderDictionary(e.target.value);
         });
 
-        // Trigger Pencarian API dengan tombol Enter
+        // Trigger Pencarian API
         document.getElementById("search-input").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -256,7 +246,6 @@
             }
         });
 
-        // Fungsi saat Kotak Kata diklik
         function clickWordBox(word) {
             document.getElementById('search-input').value = word;
             triggerSearch(word);
@@ -267,12 +256,7 @@
         }
 
         // =========================================================================
-        // FUNGSI PENCARIAN API (DICTIONARY & TRANSLATION)
-        // =========================================================================
-        // =========================================================================
-        // FUNGSI PENCARIAN KATA
-        // Klik kata -> ambil arti Indonesia + contoh penggunaan
-        // Hasil disimpan ke localStorage agar request berikutnya lebih cepat.
+        // FUNGSI PENCARIAN KATA (API DICTIONARY)
         // =========================================================================
         async function triggerSearch(selectedWord = null) {
             const inputWord = selectedWord || document.getElementById('search-input').value;
@@ -280,52 +264,38 @@
             if (!word) return;
 
             document.getElementById('search-input').value = word;
-
-            // Scroll ke paling atas
             document.getElementById('scroll-area').scrollTo({ top: 0, behavior: 'smooth' });
 
-            // Reset UI
             document.getElementById('result-container').style.display = 'none';
             document.getElementById('loading').style.display = 'block';
 
             try {
-                // =============================================================
-                // 1. Cek cache localStorage terlebih dahulu
-                // =============================================================
+                // 1. Cek cache
                 const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
-
                 if (cache[word]) {
                     renderWordResult(cache[word]);
-
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('result-container').style.display = 'flex';
                     return;
                 }
 
-                // =============================================================
-                // 2. Ambil data kamus bahasa Inggris
-                // =============================================================
+                // 2. API Dictionary Bahasa Inggris
                 const dictResponse = await fetch(
                     `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`
                 );
 
                 if (!dictResponse.ok) {
-                    throw new Error(`Kata "${word}" tidak ditemukan.`);
+                    throw new Error(`Kata "${word}" tidak ditemukan di database kamus.`);
                 }
 
                 const dictData = await dictResponse.json();
                 const result = dictData[0];
 
-                // =============================================================
-                // 3. Terjemahkan kata Inggris -> Indonesia
-                // =============================================================
+                // 3. Terjemahkan kata utama (Aman dari error fatal jika limit API tercapai)
                 const translation = await translateText(word);
 
-                // =============================================================
-                // 4. Ambil semua contoh dari definitions
-                // =============================================================
+                // 4. Kumpulkan contoh kalimat
                 const examples = [];
-
                 result.meanings.forEach(meaning => {
                     meaning.definitions.forEach(def => {
                         if (def.example && !examples.includes(def.example)) {
@@ -334,38 +304,24 @@
                     });
                 });
 
-                // Maksimal 3 contoh supaya tampilan tidak terlalu panjang.
                 const limitedExamples = examples.slice(0, 3);
 
-                // =============================================================
-                // 5. Terjemahkan contoh kalimat ke Bahasa Indonesia
-                // =============================================================
+                // 5. Terjemahkan contoh kalimat
                 const translatedExamples = [];
                 for (const example of limitedExamples) {
-                    try {
-                        const translatedExample = await translateText(example);
-                        translatedExamples.push({
-                            english: example,
-                            indonesian: translatedExample
-                        });
-                    } catch (e) {
-                        translatedExamples.push({
-                            english: example,
-                            indonesian: ''
-                        });
-                    }
+                    const translatedExample = await translateText(example);
+                    translatedExamples.push({
+                        english: example,
+                        indonesian: translatedExample
+                    });
                 }
 
-                // =============================================================
-                // 6. Cari audio pronunciation
-                // =============================================================
+                // 6. Audio
                 const phoneticObj = result.phonetics?.find(
                     p => p.audio && p.audio.length > 0
                 );
 
-                // =============================================================
-                // 7. Bentuk data yang lebih terstruktur
-                // =============================================================
+                // 7. Bentuk Data
                 const wordData = {
                     word: result.word || word,
                     phonetic: result.phonetic || '',
@@ -376,66 +332,67 @@
                     savedAt: Date.now()
                 };
 
-                // =============================================================
-                // 8. Simpan ke localStorage
-                // =============================================================
+                // 8. Simpan ke Cache
                 cache[word] = wordData;
                 localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
 
-                // =============================================================
-                // 9. Tampilkan hasil
-                // =============================================================
+                // 9. Render
                 renderWordResult(wordData);
-
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('result-container').style.display = 'flex';
 
             } catch (error) {
                 console.error(error);
-
                 document.getElementById('loading').style.display = 'none';
-                alert(
-                    `Maaf, data kata "${word}" tidak ditemukan. ` +
-                    `Pastikan kata bahasa Inggrisnya benar dan koneksi internet aktif.`
-                );
+                alert(`Maaf, data kata "${word}" tidak ditemukan. Pastikan kata bahasa Inggrisnya benar dan koneksi internet aktif.`);
             }
         }
 
         // =========================================================================
-        // TRANSLATE TEXT: Inggris -> Indonesia
+        // BUG FIX: TRANSLATE TEXT FAIL-SAFE (Cegah error saat limit API)
         // =========================================================================
         async function translateText(text) {
-            const response = await fetch(
-                `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|id`
-            );
+            try {
+                // Penambahan email dummy membantu menghindari blokir cepat dari API gratis MyMemory
+                const response = await fetch(
+                    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|id&de=cs.bahasaku@gmail.com`
+                );
 
-            if (!response.ok) {
-                throw new Error("Translation API gagal.");
+                if (!response.ok) {
+                    console.warn("Translation API gagal merespons.");
+                    return "(Terjemahan sementara tidak tersedia)";
+                }
+
+                const data = await response.json();
+                
+                // MyMemory akan memberikan responseStatus 429 jika melampaui limit pencarian harian
+                if (data && data.responseStatus === 429) {
+                     return "(Limit terjemahan harian habis)";
+                }
+
+                let translated = data?.responseData?.translatedText || '';
+
+                if (!translated || translated.trim().toLowerCase() === text.trim().toLowerCase()) {
+                    translated = "(Terjemahan tidak tersedia)";
+                }
+
+                return translated;
+                
+            } catch (error) {
+                // Error akan "ditelan" di sini, sehingga proses pencarian dictionary tetap berlanjut
+                console.error("Error pada translateText:", error);
+                return "(Koneksi terjemahan bermasalah)";
             }
-
-            const data = await response.json();
-            let translated = data?.responseData?.translatedText || '';
-
-            if (!translated || translated.trim().toLowerCase() === text.trim().toLowerCase()) {
-                translated = "(Terjemahan tidak tersedia)";
-            }
-
-            return translated;
         }
 
         // =========================================================================
         // RENDER HASIL KE HTML
         // =========================================================================
         function renderWordResult(data) {
-            // Header
             document.getElementById('word-title').innerText = data.word;
             document.getElementById('word-phonetic').innerText = data.phonetic || '';
+            document.getElementById('word-translation').innerText = data.translation || "(Terjemahan tidak tersedia)";
 
-            // Terjemahan utama
-            document.getElementById('word-translation').innerText =
-                data.translation || "(Terjemahan tidak tersedia)";
-
-            // Audio
             currentAudioUrl = data.audio || null;
             const btnAudio = document.getElementById('btn-audio');
 
@@ -445,15 +402,12 @@
                 btnAudio.style.display = 'none';
             }
 
-            // Isi arti / definition
             const meaningsContainer = document.getElementById('meanings-container');
             meaningsContainer.innerHTML = '';
 
             data.meanings.forEach(meaning => {
                 const pos = meaning.partOfSpeech || 'Meaning';
-
                 let html = `<div class="part-of-speech">${pos}</div>`;
-
                 const defs = meaning.definitions.slice(0, 2);
 
                 defs.forEach(def => {
@@ -463,17 +417,14 @@
                         </div>
                     `;
                 });
-
                 meaningsContainer.innerHTML += html;
             });
 
-            // Contoh penggunaan
             if (data.examples && data.examples.length > 0) {
                 let exampleHtml = `
                     <div class="meaning-section">
                         <div class="part-of-speech">📚 Contoh Penggunaan</div>
                 `;
-
                 data.examples.forEach(example => {
                     exampleHtml += `
                         <div class="definition-item">
@@ -486,7 +437,6 @@
                         </div>
                     `;
                 });
-
                 exampleHtml += `</div>`;
                 meaningsContainer.innerHTML += exampleHtml;
             } else {
@@ -503,9 +453,6 @@
             }
         }
 
-        // =========================================================================
-        // KEAMANAN: hindari memasukkan teks API mentah sebagai HTML
-        // =========================================================================
         function escapeHtml(value) {
             return String(value ?? '')
                 .replace(/&/g, '&amp;')
@@ -515,7 +462,6 @@
                 .replace(/'/g, '&#039;');
         }
 
-        // Fungsi Memutar Audio dari API
         function playAudio() {
             if (currentAudioUrl) {
                 const audio = new Audio(currentAudioUrl);
