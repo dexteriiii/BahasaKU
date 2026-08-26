@@ -4,18 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BahasaKu - Belajar English</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* === CSS ONBOARDING & MASCOT === */
         .mascot-container { display: flex; align-items: flex-end; gap: 15px; margin-bottom: 30px; width: 100%; }
-        .mascot-icon { font-size: 80px; animation: floatMascot 3s ease-in-out infinite; }
-        @keyframes floatMascot { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
-        .speech-bubble { background-color: white; border: 2px solid #E0E0E0; padding: 15px 20px; border-radius: 20px 20px 20px 5px; font-size: 18px; font-weight: bold; color: var(--text-dark); position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); flex: 1; }
-        .speech-bubble::before { content: ""; position: absolute; bottom: 10px; left: -10px; border-width: 10px 15px 10px 0; border-style: solid; border-color: transparent #E0E0E0 transparent transparent; }
+        .mascot-icon { animation: floatMascot 3.2s ease-in-out infinite; cursor: pointer; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+        .mascot-icon:active { transform: scale(0.94); }
+        @keyframes floatMascot { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-9px) rotate(-2deg); } }
+
+        /* --- Fox mascot (SVG) --- */
+        .fox-fur { fill: #ED8936; }
+        .fox-fur-dark { fill: #C9691A; }
+        .fox-belly { fill: #FFF6EC; }
+        .fox-line { fill: #3A2718; }
+        .fox-mascot { width: 84px; height: 84px; overflow: visible; display: block; transition: transform 0.25s ease; }
+        .mascot-icon:hover .fox-mascot { transform: scale(1.06); }
+
+        .fox-ear { transform-box: fill-box; transform-origin: 50% 100%; animation: earTwitch 4.5s ease-in-out infinite; }
+        .fox-ear.ear-r { animation-delay: .35s; }
+        @keyframes earTwitch { 0%, 82%, 100% { transform: rotate(0deg); } 88% { transform: rotate(-10deg); } 94% { transform: rotate(7deg); } }
+
+        .fox-tail { transform-box: fill-box; transform-origin: 90% 90%; animation: tailWag 2.6s ease-in-out infinite; }
+        @keyframes tailWag { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(9deg); } }
+
+        .fox-eye { transform-box: fill-box; transform-origin: 50% 50%; animation: foxBlink 4.8s ease-in-out infinite; }
+        .fox-eye.eye-r { animation-delay: .12s; }
+        @keyframes foxBlink { 0%, 90%, 100% { transform: scaleY(1); } 94% { transform: scaleY(0.12); } }
+
+        .fox-mouth { opacity: 0; transition: opacity .2s ease; }
+        .fox-mouth.mouth-neutral { opacity: 1; }
+        .fox-mascot.happy .mouth-neutral, .fox-mascot.sad .mouth-neutral { opacity: 0; }
+        .fox-mascot.happy .mouth-happy { opacity: 1; }
+        .fox-mascot.sad .mouth-sad { opacity: 1; }
+        .fox-mascot.happy { animation: foxHappyPop .6s ease; }
+        @keyframes foxHappyPop { 0% { transform: scale(1) rotate(0); } 30% { transform: scale(1.18) rotate(-6deg); } 60% { transform: scale(0.94) rotate(5deg); } 100% { transform: scale(1) rotate(0); } }
+        .fox-mascot.sad { animation: foxSadShake .5s ease; }
+        @keyframes foxSadShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px) rotate(-3deg); } 75% { transform: translateX(5px) rotate(3deg); } }
+        .fox-cheek { opacity: .55; }
+        .fox-mascot.happy .fox-cheek { opacity: .9; }
+
+        .speech-bubble { background-color: white; border: 2px solid #F0E4D6; padding: 15px 20px; border-radius: 22px 22px 22px 6px; font-family: 'Nunito', 'Segoe UI', sans-serif; font-size: 18px; font-weight: 700; color: var(--text-dark); position: relative; box-shadow: 0 6px 16px rgba(237, 137, 54, 0.12); flex: 1; }
+        .speech-bubble::before { content: ""; position: absolute; bottom: 10px; left: -10px; border-width: 10px 15px 10px 0; border-style: solid; border-color: transparent #F0E4D6 transparent transparent; }
         .speech-bubble::after { content: ""; position: absolute; bottom: 12px; left: -7px; border-width: 8px 12px 8px 0; border-style: solid; border-color: transparent white transparent transparent; }
         
         .option-list { display: flex; flex-direction: column; gap: 12px; width: 100%; }
         .btn-onboard { background-color: white; border: 2px solid #E0E0E0; border-radius: 16px; padding: 18px 20px; font-size: 16px; font-weight: bold; color: var(--text-dark); text-align: left; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; }
-        .btn-onboard:hover { background-color: #F8F9FA; }
+        .btn-onboard:hover { background-color: #F8F9FA; border-color: #F0C9A0; transform: translateY(-1px); }
         .btn-onboard.selected { border-color: var(--primary); background-color: #E3F2FD; color: var(--primary); }
         .btn-onboard .icon { font-size: 24px; }
 
@@ -37,8 +73,12 @@
         .screen { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.4s ease; }
         .screen.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        h1, h2, h3 { color: var(--text-dark); text-align: center; }
+        h1, h2, h3 { color: var(--text-dark); text-align: center; font-family: 'Baloo 2', 'Segoe UI', sans-serif; }
         p { color: var(--text-gray); text-align: center; margin-bottom: 20px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .mascot-icon, .fox-ear, .fox-tail, .fox-eye, .fox-mascot.happy, .fox-mascot.sad { animation: none !important; }
+        }
 
         /* Progress & Timer */
         .progress-container { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; width: 100%; }
@@ -51,8 +91,8 @@
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         /* Buttons */
-        .btn-primary { background-color: var(--primary); color: white; border: none; padding: 16px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; margin-top: auto; transition: 0.2s; }
-        .btn-primary:hover { background-color: #2386c1; }
+        .btn-primary { background-color: var(--primary); color: white; border: none; padding: 16px; border-radius: 30px; font-size: 18px; font-weight: bold; font-family: 'Baloo 2', 'Segoe UI', sans-serif; letter-spacing: 0.3px; cursor: pointer; width: 100%; margin-top: auto; transition: 0.2s; box-shadow: 0 6px 14px rgba(45,156,219,0.25); }
+        .btn-primary:hover { background-color: #2386c1; transform: translateY(-1px); }
         .btn-primary:active { transform: scale(0.98); }
 
         /* Layout Elements */
@@ -143,7 +183,23 @@
             </div>
 
             <div class="mascot-container">
-                <div class="mascot-icon">🦊</div>
+                <div class="mascot-icon" onclick="pokeFox('fox-1')">
+                    <svg id="fox-1" class="fox-mascot" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Maskot rubah Kuki">
+                        <g class="fox-tail"><path class="fox-fur" d="M22,92 Q-8,70 10,38 Q28,54 27,76 Z"/><path class="fox-fur-dark" d="M13,52 Q6,58 9,66" fill="none" stroke="#C9691A" stroke-width="4" stroke-linecap="round"/></g>
+                        <g class="fox-ear ear-l"><path class="fox-fur" d="M36,26 L19,-2 L47,15 Z"/><path class="fox-belly" d="M36,21 L27,7 L41,15 Z"/></g>
+                        <g class="fox-ear ear-r"><path class="fox-fur" d="M84,26 L101,-2 L73,15 Z"/><path class="fox-belly" d="M84,21 L93,7 L79,15 Z"/></g>
+                        <ellipse class="fox-fur" cx="60" cy="62" rx="42" ry="38"/>
+                        <ellipse class="fox-cheek" cx="29" cy="70" rx="8" ry="5" fill="#FF8FA3"/>
+                        <ellipse class="fox-cheek" cx="91" cy="70" rx="8" ry="5" fill="#FF8FA3"/>
+                        <path class="fox-belly" d="M60,57 Q81,68 65,88 Q60,93 55,88 Q39,68 60,57 Z"/>
+                        <ellipse class="fox-line" cx="60" cy="81" rx="5" ry="4"/>
+                        <g class="fox-eye eye-l"><ellipse class="fox-line" cx="42" cy="57" rx="5" ry="7"/><circle cx="44" cy="54" r="1.5" fill="#fff"/></g>
+                        <g class="fox-eye eye-r"><ellipse class="fox-line" cx="78" cy="57" rx="5" ry="7"/><circle cx="80" cy="54" r="1.5" fill="#fff"/></g>
+                        <path class="fox-mouth mouth-neutral" d="M55,88 Q60,91 65,88" fill="none" stroke="#3A2718" stroke-width="2" stroke-linecap="round"/>
+                        <path class="fox-mouth mouth-happy" d="M50,87 Q60,98 70,87" fill="none" stroke="#3A2718" stroke-width="2.5" stroke-linecap="round"/>
+                        <path class="fox-mouth mouth-sad" d="M52,91 Q60,85 68,91" fill="none" stroke="#3A2718" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
                 <div class="speech-bubble">Hai, aku Kuki! Apa tujuanmu belajar bahasa Inggris?</div>
             </div>
 
@@ -172,7 +228,23 @@
             </div>
 
             <div class="mascot-container">
-                <div class="mascot-icon">🦊</div>
+                <div class="mascot-icon" onclick="pokeFox('fox-2')">
+                    <svg id="fox-2" class="fox-mascot" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Maskot rubah Kuki">
+                        <g class="fox-tail"><path class="fox-fur" d="M22,92 Q-8,70 10,38 Q28,54 27,76 Z"/><path class="fox-fur-dark" d="M13,52 Q6,58 9,66" fill="none" stroke="#C9691A" stroke-width="4" stroke-linecap="round"/></g>
+                        <g class="fox-ear ear-l"><path class="fox-fur" d="M36,26 L19,-2 L47,15 Z"/><path class="fox-belly" d="M36,21 L27,7 L41,15 Z"/></g>
+                        <g class="fox-ear ear-r"><path class="fox-fur" d="M84,26 L101,-2 L73,15 Z"/><path class="fox-belly" d="M84,21 L93,7 L79,15 Z"/></g>
+                        <ellipse class="fox-fur" cx="60" cy="62" rx="42" ry="38"/>
+                        <ellipse class="fox-cheek" cx="29" cy="70" rx="8" ry="5" fill="#FF8FA3"/>
+                        <ellipse class="fox-cheek" cx="91" cy="70" rx="8" ry="5" fill="#FF8FA3"/>
+                        <path class="fox-belly" d="M60,57 Q81,68 65,88 Q60,93 55,88 Q39,68 60,57 Z"/>
+                        <ellipse class="fox-line" cx="60" cy="81" rx="5" ry="4"/>
+                        <g class="fox-eye eye-l"><ellipse class="fox-line" cx="42" cy="57" rx="5" ry="7"/><circle cx="44" cy="54" r="1.5" fill="#fff"/></g>
+                        <g class="fox-eye eye-r"><ellipse class="fox-line" cx="78" cy="57" rx="5" ry="7"/><circle cx="80" cy="54" r="1.5" fill="#fff"/></g>
+                        <path class="fox-mouth mouth-neutral" d="M55,88 Q60,91 65,88" fill="none" stroke="#3A2718" stroke-width="2" stroke-linecap="round"/>
+                        <path class="fox-mouth mouth-happy" d="M50,87 Q60,98 70,87" fill="none" stroke="#3A2718" stroke-width="2.5" stroke-linecap="round"/>
+                        <path class="fox-mouth mouth-sad" d="M52,91 Q60,85 68,91" fill="none" stroke="#3A2718" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
                 <div class="speech-bubble">Oke! Berapa banyak yang kamu tahu tentang bahasa Inggris?</div>
             </div>
 
@@ -201,7 +273,23 @@
             </div>
 
             <div class="mascot-container">
-                <div class="mascot-icon">🦊</div>
+                <div class="mascot-icon" onclick="pokeFox('fox-3')">
+                    <svg id="fox-3" class="fox-mascot" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Maskot rubah Kuki">
+                        <g class="fox-tail"><path class="fox-fur" d="M22,92 Q-8,70 10,38 Q28,54 27,76 Z"/><path class="fox-fur-dark" d="M13,52 Q6,58 9,66" fill="none" stroke="#C9691A" stroke-width="4" stroke-linecap="round"/></g>
+                        <g class="fox-ear ear-l"><path class="fox-fur" d="M36,26 L19,-2 L47,15 Z"/><path class="fox-belly" d="M36,21 L27,7 L41,15 Z"/></g>
+                        <g class="fox-ear ear-r"><path class="fox-fur" d="M84,26 L101,-2 L73,15 Z"/><path class="fox-belly" d="M84,21 L93,7 L79,15 Z"/></g>
+                        <ellipse class="fox-fur" cx="60" cy="62" rx="42" ry="38"/>
+                        <ellipse class="fox-cheek" cx="29" cy="70" rx="8" ry="5" fill="#FF8FA3"/>
+                        <ellipse class="fox-cheek" cx="91" cy="70" rx="8" ry="5" fill="#FF8FA3"/>
+                        <path class="fox-belly" d="M60,57 Q81,68 65,88 Q60,93 55,88 Q39,68 60,57 Z"/>
+                        <ellipse class="fox-line" cx="60" cy="81" rx="5" ry="4"/>
+                        <g class="fox-eye eye-l"><ellipse class="fox-line" cx="42" cy="57" rx="5" ry="7"/><circle cx="44" cy="54" r="1.5" fill="#fff"/></g>
+                        <g class="fox-eye eye-r"><ellipse class="fox-line" cx="78" cy="57" rx="5" ry="7"/><circle cx="80" cy="54" r="1.5" fill="#fff"/></g>
+                        <path class="fox-mouth mouth-neutral" d="M55,88 Q60,91 65,88" fill="none" stroke="#3A2718" stroke-width="2" stroke-linecap="round"/>
+                        <path class="fox-mouth mouth-happy" d="M50,87 Q60,98 70,87" fill="none" stroke="#3A2718" stroke-width="2.5" stroke-linecap="round"/>
+                        <path class="fox-mouth mouth-sad" d="M52,91 Q60,85 68,91" fill="none" stroke="#3A2718" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
                 <div class="speech-bubble">Hmm, lalu mengapa kamu ingin memperlancar bahasa Inggris?</div>
             </div>
 
@@ -230,7 +318,23 @@
             </div>
 
             <div class="mascot-container">
-                <div class="mascot-icon">🦊</div>
+                <div class="mascot-icon" onclick="pokeFox('fox-4')">
+                    <svg id="fox-4" class="fox-mascot" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Maskot rubah Kuki">
+                        <g class="fox-tail"><path class="fox-fur" d="M22,92 Q-8,70 10,38 Q28,54 27,76 Z"/><path class="fox-fur-dark" d="M13,52 Q6,58 9,66" fill="none" stroke="#C9691A" stroke-width="4" stroke-linecap="round"/></g>
+                        <g class="fox-ear ear-l"><path class="fox-fur" d="M36,26 L19,-2 L47,15 Z"/><path class="fox-belly" d="M36,21 L27,7 L41,15 Z"/></g>
+                        <g class="fox-ear ear-r"><path class="fox-fur" d="M84,26 L101,-2 L73,15 Z"/><path class="fox-belly" d="M84,21 L93,7 L79,15 Z"/></g>
+                        <ellipse class="fox-fur" cx="60" cy="62" rx="42" ry="38"/>
+                        <ellipse class="fox-cheek" cx="29" cy="70" rx="8" ry="5" fill="#FF8FA3"/>
+                        <ellipse class="fox-cheek" cx="91" cy="70" rx="8" ry="5" fill="#FF8FA3"/>
+                        <path class="fox-belly" d="M60,57 Q81,68 65,88 Q60,93 55,88 Q39,68 60,57 Z"/>
+                        <ellipse class="fox-line" cx="60" cy="81" rx="5" ry="4"/>
+                        <g class="fox-eye eye-l"><ellipse class="fox-line" cx="42" cy="57" rx="5" ry="7"/><circle cx="44" cy="54" r="1.5" fill="#fff"/></g>
+                        <g class="fox-eye eye-r"><ellipse class="fox-line" cx="78" cy="57" rx="5" ry="7"/><circle cx="80" cy="54" r="1.5" fill="#fff"/></g>
+                        <path class="fox-mouth mouth-neutral" d="M55,88 Q60,91 65,88" fill="none" stroke="#3A2718" stroke-width="2" stroke-linecap="round"/>
+                        <path class="fox-mouth mouth-happy" d="M50,87 Q60,98 70,87" fill="none" stroke="#3A2718" stroke-width="2.5" stroke-linecap="round"/>
+                        <path class="fox-mouth mouth-sad" d="M52,91 Q60,85 68,91" fill="none" stroke="#3A2718" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
                 <div class="speech-bubble">Sip! Terakhir, berapa lama target belajarmu setiap hari?</div>
             </div>
 
@@ -519,12 +623,30 @@
             goToScreen('screen-dashboard');
         }
 
+        // === MASKOT RUBAH: reaksi interaktif (murni visual, tidak mengubah logika app) ===
+        function setFoxMood(foxId, mood, duration = 700) {
+            const fox = document.getElementById(foxId);
+            if (!fox) return;
+            fox.classList.remove('happy', 'sad');
+            void fox.offsetWidth; // restart animasi
+            fox.classList.add(mood);
+            setTimeout(() => fox.classList.remove(mood), duration);
+        }
+
+        function pokeFox(foxId) {
+            setFoxMood(foxId, 'happy', 650);
+        }
+
         // === LOGIKA ONBOARDING ===
         function selectOnboardOption(containerId, buttonElement) {
             const container = document.getElementById(containerId);
             const buttons = container.querySelectorAll('.btn-onboard');
             buttons.forEach(btn => btn.classList.remove('selected'));
             buttonElement.classList.add('selected');
+
+            // Reaksi kecil dari maskot saat pilihan dipilih (visual saja)
+            const stepNumberForFox = containerId.split('-')[1];
+            setFoxMood(`fox-${stepNumberForFox}`, 'happy', 650);
 
             const stepNumber = containerId.split('-')[1]; 
             let nextBtnId = `btn-next-onboard-${stepNumber}`;

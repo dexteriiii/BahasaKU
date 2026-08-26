@@ -113,6 +113,35 @@
             margin-bottom: 14px;
         }
 
+        /* Navigasi Tab Part */
+        .part-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #f0f0f0;
+            padding: 6px;
+            border-radius: 14px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            color: var(--text-gray);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
         .video-wrapper {
             width: 100%;
             aspect-ratio: 16 / 9;
@@ -125,17 +154,6 @@
             width: 100%;
             height: 100%;
             border: 0;
-        }
-
-        .local-video {
-            display: none;
-        }
-
-        .local-video video {
-            width: 100%;
-            display: block;
-            border-radius: 14px;
-            background: #111;
         }
 
         .video-note {
@@ -175,21 +193,6 @@
             line-height: 1.6;
         }
 
-        .btn-local {
-            margin-top: 12px;
-            padding: 12px 16px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 700;
-        }
-
-        .btn-local:hover {
-            opacity: 0.9;
-        }
-
         @media (min-width: 768px) {
             #app {
                 min-height: 95vh;
@@ -212,21 +215,23 @@
                 <div class="badge">MATERI BELAJAR</div>
                 <h2>Video Pembelajaran Bahasa Inggris</h2>
                 <p>
-                    Pelajari materi melalui video, kemudian baca ringkasan untuk
-                    membantu mengingat poin-poin penting.
+                    Pelajari materi Part of Speech secara lengkap melalui video di bawah, 
+                    kemudian baca ringkasan untuk membantu mengingat poin-poin penting.
                 </p>
             </section>
 
             <section class="section">
-                <h3>🎬 Video Materi</h3>
+                <h3>🎬 Pilih Video Materi</h3>
 
-                <!--
-                    MODE SEKARANG:
-                    Menampilkan video YouTube sebagai referensi.
-                    Sumber: https://youtu.be/k2_2H3qT9q0?si=pX0UFXDab724XIK8
-                -->
+                <!-- TOMBOL TAB UNTUK MEMILIH PART -->
+                <div class="part-tabs">
+                    <button id="tab-btn-1" class="tab-btn active" onclick="switchPart(1)">Bagian 1 (Part 1)</button>
+                    <button id="tab-btn-2" class="tab-btn" onclick="switchPart(2)">Bagian 2 (Part 2)</button>
+                </div>
+
+                <!-- PLAYER VIDEO -->
                 <div class="video-wrapper" id="youtube-video">
-                    <iframe
+                    <iframe id="youtube-iframe"
                         src="https://www.youtube.com/embed/k2_2H3qT9q0"
                         title="Video Materi Bahasa Inggris"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -234,54 +239,74 @@
                     </iframe>
                 </div>
 
-                <!--
-                    MODE LOKAL:
-                    Setelah file video tersedia, pindahkan video ke:
-                    assets/video/materi-inggris.mp4
-
-                    Lalu ubah:
-                    const USE_LOCAL_VIDEO = true;
-                -->
-              
-
-                
-
                 <p class="video-note">
-                    Untuk versi final aplikasi, video dapat ditempatkan di folder lokal
-                    <strong>assets/video/</strong> sehingga halaman materi tidak bergantung
-                    pada embed YouTube.
+                    <strong>Tips:</strong> Gunakan koneksi internet yang stabil untuk memuat video pembelajaran dengan lancar.
                 </p>
             </section>
 
             <section class="section">
                 <h3>📝 Ringkasan Materi</h3>
 
-                <div class="summary-card">
-                    <strong>Topik Utama: Part of Speech (Kelas Kata)</strong><br>
-                    Part of Speech adalah pengelompokan kata dalam bahasa Inggris berdasarkan fungsi dan kegunaannya. Kedelapan jenis kata ini sering disingkat dengan jembatan keledai <strong>PANCAVIP</strong>. Materi kali ini membahas 4 kelas kata dasar pertama.
+                <!-- RINGKASAN BAGIAN 1 (Ditampilkan Default) -->
+                <div id="summary-part1">
+                    <div class="summary-card">
+                        <strong>Topik Utama: Part of Speech (Kelas Kata) - Bagian 1</strong><br>
+                        Part of Speech adalah pengelompokan kata dalam bahasa Inggris berdasarkan fungsi dan kegunaannya. Kedelapan jenis kata ini sering disingkat dengan jembatan keledai <strong>PANCAVIP</strong>. Materi kali ini membahas 4 kelas kata dasar pertama.
+                    </div>
+
+                    <div class="summary-card" style="margin-top: 14px;">
+                        <strong>4 Jenis Kelas Kata Dasar Pertama:</strong>
+                        <ul class="summary-list">
+                            <li><strong>1. Pronoun (Kata Ganti):</strong> Berfungsi menggantikan kata benda (noun) agar tidak diulang-ulang. <br>
+                            <em>Contoh:</em> I, You, They, We, He, She, It (Subjek) & Me, You, Them, Us, Him, Her, It (Objek).</li>
+                            <li><strong>2. Adjective (Kata Sifat):</strong> Berfungsi menjelaskan, mensifati, atau memberi detail pada kata benda. <br>
+                            <em>Contoh:</em> Good (baik), Bad (buruk), Beautiful (cantik), Happy (senang).</li>
+                            <li><strong>3. Noun (Kata Benda):</strong> Berfungsi menamai sesuatu, baik itu benda, orang, tempat, atau negara.<br>
+                            <em>Contoh:</em> Book, School, Joe (nama orang), Indonesia.</li>
+                            <li><strong>4. Conjunction (Kata Hubung):</strong> Berfungsi menyambungkan kata dengan kata, frasa, atau kalimat.<br>
+                            <em>Contoh:</em> And, But, So, After, Before.</li>
+                        </ul>
+                    </div>
+
+                    <div class="summary-card" style="margin-top: 14px;">
+                        <strong>Contoh Penggunaan Part 1:</strong>
+                        <ul class="summary-list">
+                            <li><em>Pronoun:</em> "The girls look at the man" berubah menjadi <strong>"They look at him"</strong>.</li>
+                            <li><em>Adjective:</em> <strong>Beautiful girl</strong> (kata "beautiful" menjelaskan noun "girl").</li>
+                            <li><em>Conjunction:</em> "I love you <strong>but</strong> you don't care" (menghubungkan dua kalimat).</li>
+                        </ul>
+                    </div>
                 </div>
 
-                <div class="summary-card" style="margin-top: 14px;">
-                    <strong>4 Jenis Kelas Kata Dasar:</strong>
-                    <ul class="summary-list">
-                        <li><strong>1. Pronoun (Kata Ganti):</strong> Berfungsi menggantikan kata benda (noun) agar tidak diulang-ulang. <br>
-                        <em>Contoh:</em> I, You, They, We, He, She, It (sebagai subjek) dan Me, You, Them, Us, Him, Her, It (sebagai objek).</li>
-                        <li><strong>2. Adjective (Kata Sifat):</strong> Berfungsi menjelaskan, mensifati, atau memberi detail pada kata benda. <br>
-                        <em>Contoh:</em> Good (baik), Bad (buruk), Beautiful (cantik), Happy (senang).</li>
-                        <li><strong>3. Noun (Kata Benda):</strong> Berfungsi menamai sesuatu, baik itu benda, orang, tempat, atau negara.<br>
-                        <em>Contoh:</em> Book, School, Joe (nama orang), Indonesia.</li>
-                        <li><strong>4. Conjunction (Kata Hubung):</strong> Berfungsi menyambungkan kata dengan kata, frasa, atau kalimat dengan kalimat.<br>
-                        <em>Contoh:</em> And, But, So, After, Before.</li>
-                    </ul>
-                </div>
+                <!-- RINGKASAN BAGIAN 2 (Disembunyikan Default) -->
+                <div id="summary-part2" style="display: none;">
+                    <div class="summary-card">
+                        <strong>Topik Utama: Part of Speech (Kelas Kata) - Bagian 2</strong><br>
+                        Melanjutkan video sebelumnya, materi ini membahas tuntas 4 kelas kata terakhir untuk melengkapi rumus <strong>PANCAVIP</strong>.
+                    </div>
 
-                <div class="summary-card" style="margin-top: 14px;">
-                    <strong>Contoh Penggunaan dalam Kalimat:</strong>
-                    <ul class="summary-list">
-                        <li><em>Pronoun:</em> "The girls look at the man" berubah menjadi <strong>"They look at him"</strong>.</li>
-                        <li><em>Adjective:</em> <strong>Beautiful girl</strong> (kata "beautiful" menjelaskan kata benda "girl").</li>
-                        <li><em>Conjunction:</em> "I love you <strong>but</strong> you don't care" (kata "but" menghubungkan dua kalimat).</li>
-                    </ul>
+                    <div class="summary-card" style="margin-top: 14px;">
+                        <strong>4 Jenis Kelas Kata Lanjutan:</strong>
+                        <ul class="summary-list">
+                            <li><strong>1. Adverb (Kata Keterangan):</strong> Berfungsi memberikan keterangan tambahan pada kata kerja (verb), kata sifat (adjective), atau adverb itu sendiri. <br>
+                            <em>Contoh:</em> Quickly (dengan cepat), Yesterday (kemarin), Always (selalu), Here (di sini).</li>
+                            <li><strong>2. Verb (Kata Kerja):</strong> Menunjukkan sebuah aktivitas, tindakan, atau keadaan subjek. <br>
+                            <em>Contoh:</em> Read (membaca), Run (berlari), Write (menulis), Wait (menunggu).</li>
+                            <li><strong>3. Interjection (Kata Seru):</strong> Digunakan untuk mengungkapkan luapan emosi atau perasaan secara spontan.<br>
+                            <em>Contoh:</em> Wow!, Oh my God!, Ouch!, Oops!</li>
+                            <li><strong>4. Preposition (Kata Depan):</strong> Kata yang diletakkan sebelum kata benda (noun) atau kata ganti (pronoun) untuk menunjukkan waktu, tempat, posisi, atau arah.<br>
+                            <em>Contoh:</em> In, On, At, From, By, About.</li>
+                        </ul>
+                    </div>
+
+                    <div class="summary-card" style="margin-top: 14px;">
+                        <strong>Contoh Penggunaan Part 2:</strong>
+                        <ul class="summary-list">
+                            <li><em>Adverb:</em> "She runs <strong>quickly</strong>" (menerangkan kata kerja 'runs' / berlari dengan cepat).</li>
+                            <li><em>Verb:</em> "He <strong>reads</strong> a book" (Aktivitas membaca).</li>
+                            <li><em>Preposition:</em> "They sit <strong>in</strong> the class" ('in' diletakkan sebelum noun 'the class').</li>
+                        </ul>
+                    </div>
                 </div>
             </section>
 
@@ -289,54 +314,36 @@
                 <h3>💡 Catatan Belajar</h3>
                 <div class="important">
                     Setelah menonton video, gunakan halaman <strong>Kamus Pintar</strong>
-                    untuk mencari kosakata yang belum dipahami. Kata yang dicari dapat
-                    menampilkan terjemahan, definisi, contoh penggunaan, dan audio
-                    pronunciation.
+                    di Menu Dashboard untuk mencari kosakata yang belum dipahami dari materi video di atas!
                 </div>
             </section>
         </main>
     </div>
 
     <script>
-        // false = tampilkan YouTube
-        // true  = tampilkan video lokal
-        const USE_LOCAL_VIDEO = false;
+        // Logika untuk mengganti Tab, Video, dan Ringkasan
+        function switchPart(partNum) {
+            // 1. Matikan highlight tombol sebelumnya, lalu nyalakan tombol yang diklik
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-btn-' + partNum).classList.add('active');
 
-        function setVideoMode() {
-            const youtube = document.getElementById('youtube-video');
-            const local = document.getElementById('local-video');
-            const button = document.getElementById('toggle-video-btn');
+            // 2. Ambil elemen pemutar iframe dan container teks
+            const iframe = document.getElementById('youtube-iframe');
+            const summary1 = document.getElementById('summary-part1');
+            const summary2 = document.getElementById('summary-part2');
 
-            if (USE_LOCAL_VIDEO) {
-                youtube.style.display = 'none';
-                local.style.display = 'block';
-                button.textContent = 'Gunakan Video YouTube';
-            } else {
-                youtube.style.display = 'block';
-                local.style.display = 'none';
-                button.textContent = 'Gunakan Video Lokal';
+            // 3. Kondisi ubah link dan teks ringkasan
+            if (partNum === 1) {
+                iframe.src = "https://www.youtube.com/embed/k2_2H3qT9q0";
+                summary1.style.display = "block";
+                summary2.style.display = "none";
+            } else if (partNum === 2) {
+                // Link embed video baru Part 2
+                iframe.src = "https://www.youtube.com/embed/nLrrrhmbKq0";
+                summary1.style.display = "none";
+                summary2.style.display = "block";
             }
         }
-
-        function toggleVideoMode() {
-            const youtube = document.getElementById('youtube-video');
-            const local = document.getElementById('local-video');
-            const button = document.getElementById('toggle-video-btn');
-
-            const usingLocal = local.style.display === 'block';
-
-            if (usingLocal) {
-                youtube.style.display = 'block';
-                local.style.display = 'none';
-                button.textContent = 'Gunakan Video Lokal';
-            } else {
-                youtube.style.display = 'none';
-                local.style.display = 'block';
-                button.textContent = 'Gunakan Video YouTube';
-            }
-        }
-
-        setVideoMode();
     </script>
 </body>
 </html>
